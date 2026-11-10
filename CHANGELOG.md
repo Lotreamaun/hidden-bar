@@ -19,6 +19,9 @@
 - macOS 27.2 (direct download build): menu-bar extras owned by helper or background processes follow their position relative to the arrow.
 - macOS 27 (direct download build): diagnostics are readable in Console (subsystem `com.dwarvesv.minimalbar`, category `visibility`) instead of `<private>`.
 
+### Known issues
+- macOS 27 (direct download build): while the bar is collapsed, clicking the date and time does not open Notification Center. macOS refuses it under the restriction Hidden Bar hides icons with; expand the bar first.
+
 ## v1.11.1 (2026-09-18)
 
 ### Fixed

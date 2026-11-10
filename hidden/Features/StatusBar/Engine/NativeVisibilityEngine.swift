@@ -33,6 +33,9 @@ import os
 //   disappears after an activation, and automatic collapses wait while it is on
 //   screen. A collapse by click still hides it.
 // - A Focus that turns on while collapsed is not shown until the next expand.
+// - Notification Center does not open while collapsed: clicking the clock does
+//   nothing. It refuses under any restriction with an allow-list, even one that
+//   allows everything; only the unrestricted configuration leaves it working.
 final class NativeVisibilityEngine: MenuBarEngine {
     private weak var items: MenuBarItemProvider?
     private let inventory: MenuBarInventoryProviding

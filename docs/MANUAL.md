@@ -59,6 +59,13 @@ Hidden Bar therefore does the following:
   indicator disappears for a moment and comes back as the collapse is undone;
   the arrow turns and turns back with it.
 
+#### Notification Center
+
+While the bar is collapsed, **clicking the date and time does not open
+Notification Center**. The restriction Hidden Bar hides icons with is macOS's
+assessment (exam) mode, and Notification Center refuses to open under it, even
+when nothing would be hidden. Expand the bar, then click the clock.
+
 Diagnostics: Console.app, subsystem `com.dwarvesv.minimalbar`, category
 `visibility`. Each collapse logs the sections read and the apps hidden; a
 collapse that waits logs the control it is waiting for.
@@ -117,6 +124,7 @@ To undo any of them: `defaults delete com.dwarvesv.minimalbar <key>`.
 | A new or just-updated app's icon shows up already hidden | Expected on macOS 13–26, see "Why new icons start hidden" below; ⌘-drag it to the right of the separator once |
 | macOS 27: the bar does not auto-collapse | A Focus is on: auto collapse is off while it is, see "Focus and other controls" above; click the arrow to collapse. Otherwise check the Accessibility permission |
 | macOS 27: the Focus indicator is missing | It turned on while the bar was collapsed; expand the bar |
+| macOS 27: clicking the date and time does not open Notification Center | Expected while the bar is collapsed, see "Notification Center" above; expand the bar |
 | macOS 27: an icon left of the arrow is not hidden | Hidden Bar has not seen it there yet; expand and collapse once more. If it persists, the app may have no bundle identifier (logged in Console) |
 
 ### Why new icons start hidden

@@ -93,6 +93,8 @@ collapse is waiting for. Checks:
 - Focus off while held: the bar collapses at the next auto-collapse tick;
 - Focus turned on while collapsed: nothing happens until the next expand,
   where the indicator shows (known gap, by design);
+- clicking the date and time while collapsed does not open Notification
+  Center, and does once expanded (known limit of the restriction);
 - the arrow changes as the icons go (not after them), turns back when a held
   collapse is undone, ends on the right glyph after rapid clicks, and does not
   flip when switching Spaces.

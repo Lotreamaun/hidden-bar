@@ -105,7 +105,9 @@ A full-tree audit (2026-06) scored 9/10 with hygiene-level findings only.
   (tracked in issues #357/#341/#148; candidate implementations in PRs #350/#358).
 - **macOS 27**: the menu bar re-architecture breaks length-inflation hiding
   (issue #360). The direct build hides through a private allow-list API instead;
-  the App Store build cannot hide there.
+  the App Store build cannot hide there. That API is assessment (exam) mode, so
+  while collapsed Notification Center does not open and Focus is hidden; both
+  hold for any allow-list, including one that allows everything.
 - **Other apps' open menus**: interaction-awareness is pointer-position-based;
   a pointer deep inside another app's open dropdown is below the menubar band,
   so the collapse can still fire there.
