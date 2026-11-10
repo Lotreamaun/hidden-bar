@@ -6,18 +6,11 @@
   Copyright © 2020 Dwarves Foundation. All rights reserved.
 */
 
-"Preferences..." = "Preferencje...";
-"Toggle Auto Collapse" = "Przełącz automatyczne zwijanie";
-"Enable Auto Collapse" = "Włącz automatyczne zwijanie";
-"Disable Auto Collapse" = "Wyłącz automatyczne zwijanie";
-"Quit" = "Zakończ";
-"Set Shortcut" = "Ustaw skrót";
-"Tutorial text" = "
-Użyj funkcji „Zawsze ukryte”, aby uporządkować ikony. Oto jak ją skonfigurować.
-Jak włączyć tę funkcję:
-1. Włącz pasek „Zawsze ukryte” oznaczony symbolem „|” (półprzezroczysty kolorowy pasek).
-2. Przytrzymaj klawisz ⌘ i przeciągnij go na lewą stronę zwykłego paska. Następnie przenieś na lewo od tego symbolu wszystkie ikony, które chcesz zawsze ukrywać.
-3. Na koniec kliknij prawym przyciskiem myszy ikonę zwijania „>”, aby je ukryć.
-Jak wyświetlić zawsze ukryte ikony:
-1. Ponownie kliknij prawym przyciskiem myszy ikonę „<”, aby wyświetlić ukryte ikony. Powtórz tę czynność, aby ponownie je ukryć. Gotowe 😉!
-";
+"Start at Login" = "Uruchamiaj po zalogowaniu";
+"Auto Collapse" = "Automatyczne zwijanie";
+"Off" = "Wyłączone";
+"%ld seconds" = "%ld s";
+"1 minute" = "1 min";
+"Quit Hidden Bar" = "Zakończ Hidden Bar";
+"Could not update the login item" = "Nie można zmienić rzeczy otwieranej przy logowaniu";
+"Check System Settings > General > Login Items and make sure Hidden Bar is allowed." = "Sprawdź w Ustawieniach systemowych > Ogólne > Rzeczy otwierane przy logowaniu, czy Hidden Bar ma pozwolenie.";

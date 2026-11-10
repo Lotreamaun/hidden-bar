@@ -6,17 +6,11 @@
   Copyright © 2020 Dwarves Foundation. All rights reserved.
 */
 
-"Preferences..." = "環境設定...";
-"Quit" = "終了";
-"Toggle Auto Collapse" = "自動折りたたみを切り替える";
-"Enable Auto Collapse" = "自動折りたたみオン";
-"Disable Auto Collapse" = "自動折りたたみオフ";
-"Set Shortcut" = "ショットキーを設定";
-"Tutorial text" = "
-「アイコンを常に非表示機能」でメニューバーをスッキリできる.
-設定方法:
-1. 「アイコンを常に非表示機能」を有効にする（半透明の｜が表示される）．
-2. Command(⌘)キーを押しながら，半透明の「｜」を不透明「｜」の左側に移動して，さらに常に非表示したいアイコンを半透明の「｜」の左側に移動する．
-3. 最後は「＞」を右クリックすると，半透明「｜」より左にあるアイコンが常に非表示される．
-（もう一回「＞」を右クリックすると，常に非表示されたアイコンが表示される）
-";
+"Start at Login" = "ログイン時に開く";
+"Auto Collapse" = "自動折りたたみ";
+"Off" = "オフ";
+"%ld seconds" = "%ld秒";
+"1 minute" = "1分";
+"Quit Hidden Bar" = "Hidden Barを終了";
+"Could not update the login item" = "ログイン項目を変更できませんでした";
+"Check System Settings > General > Login Items and make sure Hidden Bar is allowed." = "システム設定 > 一般 > ログイン項目で Hidden Bar が許可されていることを確認してください。";

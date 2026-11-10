@@ -25,6 +25,8 @@ final class LegacyLengthEngine: MenuBarEngine {
     // for a working user. The action lands once this log calibrates the signal.
     private var hideMechanismChecked = false
 
+    var onHidingChange: ((Bool) -> Void)?
+
     init(items: MenuBarItemProvider) {
         self.items = items
     }
@@ -48,8 +50,9 @@ final class LegacyLengthEngine: MenuBarEngine {
         return max(500, min(screenWidth * 2, 10_000))
     }
 
-    func collapse(completion: @escaping (CollapseResult) -> Void) {
+    func collapse(origin: CollapseOrigin, completion: @escaping (CollapseResult) -> Void) {
         items?.separatorItem.length = collapsedLength
+        onHidingChange?(true)
         completion(.collapsed)
         verifyHideMechanismIfNeeded()
     }
@@ -58,24 +61,10 @@ final class LegacyLengthEngine: MenuBarEngine {
         items?.separatorItem.length = expandedLength
     }
 
-    func updateAlwaysHiddenSection(enabled: Bool, separatorHidden: Bool) {
-        let length: CGFloat
-        if separatorHidden {
-            length = enabled ? collapsedLength : 0
-        } else {
-            length = enabled ? expandedLength : 0
-        }
-        items?.alwaysHiddenItem?.length = length
-    }
-
     // The separator is what widens, so it must sit between the hidden icons and
-    // the arrow, and the always-hidden separator further out still.
+    // the arrow.
     var isArrangementValid: Bool {
         return MenuBarOrder.isItem(items?.separatorItem, onHiddenSideOf: items?.toggleItem)
-    }
-
-    var isAlwaysHiddenSeparatorPlaced: Bool {
-        return MenuBarOrder.isItem(items?.alwaysHiddenItem, onHiddenSideOf: items?.separatorItem)
     }
 
     func invalidateLayout() {

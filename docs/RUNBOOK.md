@@ -5,23 +5,39 @@ Build, verify, and release Hidden Bar. Assumes current Xcode on macOS 13+.
 ## Build
 
 ```sh
-# CI-style build, no signing required
+# direct, unsandboxed build (native macOS 27 hiding), no signing required
 xcodebuild -project 'Hidden Bar.xcodeproj' -scheme 'Hidden Bar' \
-  -configuration Debug CODE_SIGNING_ALLOWED=NO build
+  -configuration Debug-Direct CODE_SIGNING_ALLOWED=NO build
 
 # runnable local build (uses your Apple Development identity)
 xcodebuild -project 'Hidden Bar.xcodeproj' -scheme 'Hidden Bar' \
-  -configuration Debug build
+  -configuration Debug-Direct build
 ```
+
+The scheme's Run and Test actions already select `Debug-Direct`, so omitting
+`-configuration` is equivalent. `-configuration Debug` is the sandboxed App
+Store configuration and does not include native hiding.
 
 Both must exit 0 with **no** `MACOSX_DEPLOYMENT_TARGET` override; the floor is
 13.0 in the project file. The single expected warning is the deliberately
 deprecated `SMLoginItemSetEnabled(false)` call that cleans up legacy installs.
 
-## Behavioral verification (no test target exists; this is the methodology)
+## Tests
 
-The repo has no unit-test infrastructure; behavior is verified against the real
-menu bar. Two building blocks make that scriptable:
+```sh
+xcodebuild -project 'Hidden Bar.xcodeproj' -scheme 'Hidden Bar' \
+  -configuration Debug-Direct -destination 'platform=macOS' \
+  CODE_SIGNING_ALLOWED=NO test
+```
+
+`HiddenBarTests` covers the layout resolver, the section memory and the native
+engine; `HiddenTests` (hosted in the app) covers the settings menu and the
+default preferences. The scheme runs both targets.
+
+## Behavioral verification
+
+Unit tests do not exercise the real menu bar; release checks still run against
+the live bar. Two building blocks make that scriptable:
 
 1. **Truth signal**: the separator's AX size.
    `osascript -e 'tell application "System Events" to tell process "Hidden Bar" to get size of menu bar item 2 of menu bar 2'`
@@ -31,8 +47,11 @@ menu bar. Two building blocks make that scriptable:
    known accessibility defect). Post real `CGEvent` mouse clicks at the arrow's
    AX-reported coordinates instead.
 
-Standard checks before any release:
+Standard checks before any release (every build):
 
+- right-click the arrow: the menu shows only Start at Login, Auto Collapse,
+  and Quit Hidden Bar; choosing a delay or Off takes effect without a relaunch;
+  no window opens at launch;
 - expand/collapse toggle flips the separator size both ways;
 - with `numberOfSecondForAutoHide` set to 3, an expanded bar survives 2x the
   window while the pointer is parked in the menubar band, collapses within the
@@ -44,6 +63,43 @@ Standard checks before any release:
 - autostart pref on -> `AutoStart: SMAppService.mainApp.status = 1` on stderr;
   off -> `= 0` (run the binary directly to capture stderr);
 - localization tables stay parseable: `plutil -lint hidden/*.lproj/*.strings`.
+
+On macOS 27 direct builds the separator size signal does not apply (the native
+allow-list replaces it). Watch the log instead:
+
+```sh
+log stream --info --predicate 'subsystem == "com.dwarvesv.minimalbar" AND category == "visibility"'
+```
+
+`sections read: visible …; hidden …` is what the last snapshot contained,
+`restriction active, hiding …` is what a collapse actually hides (from the
+remembered sections), and `collapse held: would hide system controls …` names the control an automatic
+collapse is waiting for. Checks:
+
+- system controls (Control Center, clock, Wi-Fi, Sound, battery) and the
+  microphone/camera indicators remain visible after collapsing, even when they
+  sit left of the arrow;
+- a third-party or helper icon placed right of the arrow stays visible, and one
+  placed left is hidden; an app with several icons stays visible if any of its
+  icons is right of the arrow;
+- the input-source menu survives five auto-collapses in a row (an incomplete
+  snapshot must not hide it);
+- quit and relaunch: the launch-time collapse hides the same apps as before;
+- launch an app while collapsed: its icon is visible; relaunch one that was
+  hidden: it stays hidden;
+- Focus on, bar expanded: the auto-collapse logs `collapse held` and the bar
+  stays expanded; a click on the arrow collapses it, and after the next expand
+  the auto-collapse goes through; Focus off, then on again: held again;
+- Focus off while held: the bar collapses at the next auto-collapse tick;
+- Focus turned on while collapsed: nothing happens until the next expand,
+  where the indicator shows (known gap, by design);
+- the arrow changes with the symbol replace transition as the icons go (not
+  after them), crossfades with Reduce Motion on, and turns back when a held
+  collapse is undone; rapid clicks end on the right glyph.
+
+The remembered sections are stored under `menuBarSectionMemory` in the prefs
+domain; `defaults delete com.dwarvesv.minimalbar menuBarSectionMemory` resets
+them (everything is then visible until seen on the hidden side again).
 
 When testing on a machine that runs Hidden Bar daily: export the prefs domain
 first (`defaults export com.dwarvesv.minimalbar backup.plist`), quit the

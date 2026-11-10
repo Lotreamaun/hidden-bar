@@ -1,9 +1,8 @@
 # Architecture
 
-Hidden Bar is a single-process, sandboxed AppKit menubar utility (~1.5k lines of
-Swift, one dependency: [HotKey](https://github.com/soffes/HotKey)). There is no
-helper app, no daemon, no network. Everything happens inside three
-`NSStatusItem`s and one window.
+Hidden Bar is a single-process AppKit menubar utility with no third-party
+dependencies. There is no helper app, no daemon, no network, and no window:
+everything happens inside two `NSStatusItem`s and the arrow's menu.
 
 ## The core trick
 
@@ -20,9 +19,8 @@ flowchart LR
         ARROW["arrow item\n(toggle, variable length)"]
         SEP["separator item\n20pt expanded / ~2x screen width collapsed"]
         HIDDEN["other apps' icons\npushed off-screen when collapsed"]
-        ALWAYS["always-hidden separator\n(optional)"]
     end
-    ARROW --- SEP --- HIDDEN --- ALWAYS
+    ARROW --- SEP --- HIDDEN
 ```
 
 Key consequences of this design:
@@ -44,32 +42,36 @@ Key consequences of this design:
 flowchart TD
     AD[AppDelegate] -->|owns| SBC[StatusBarController]
     AD -->|registers| SM["SMAppService.mainApp\n(login item, macOS 13+)"]
-    AD -->|global hotkey| HK[HotKey lib]
-    SBC -->|3 status items| NSB[NSStatusBar.system]
+    SBC -->|2 status items| NSB[NSStatusBar.system]
     SBC -->|auto-hide| T["one-shot Timer\n(re-arms while pointer in menubar)"]
     SBC -->|opt-in| HM["global mouseMoved monitor\n(hover-to-expand, only if pref on)"]
     PREFS[Preferences facade] -->|UserDefaults| UD[(UserDefaults)]
-    PREFS -->|posts| NC{{NotificationCenter\n.prefsChanged / .alwayHideToggle}}
+    PREFS -->|posts| NC{{NotificationCenter\n.prefsChanged}}
     NC --> SBC
-    PVC[PreferencesViewController] --> PREFS
-    SBC -->|context menu| PVC
+    SBC -->|right-click| SMENU[SettingsMenu] --> PREFS
+    SBC -->|glyph| ARR[StatusBarArrow]
 ```
 
-- **`AppDelegate`** (entry): registers default prefs, sets up the global hotkey,
-  runs the one-shot legacy login-item migration, owns the `StatusBarController`.
-- **`StatusBarController`** (the product, ~370 lines): the three status items,
+- **`AppDelegate`** (entry): registers default prefs, runs the one-shot legacy
+  login-item migration, owns the `StatusBarController`.
+- **`StatusBarController`** (the product): the two status items,
   when to collapse/expand, auto-hide timer, interaction-awareness, hover-to-expand,
   self-restore of dragged-off items.
 - **`MenuBarEngine`** (`Features/StatusBar/Engine/`): how hiding is achieved.
-  The controller calls `collapse` / `expand` / `updateAlwaysHiddenSection` /
-  `invalidateLayout` and never writes a status-item length itself.
-  `MenuBarEngineFactory` is the one place that picks an engine for the running
-  OS; today that is always `LegacyLengthEngine` (the length trick below).
+  The controller calls `collapse` / `expand` / `invalidateLayout` and never
+  writes a status-item length itself; the engine reports through
+  `onHidingChange` the moment icons are hidden or come back.
+  `MenuBarEngineFactory` is the one place that picks an engine: the direct build
+  on macOS 27 gets `NativeVisibilityEngine` (an allow-list restriction, see the
+  manual), everything else `LegacyLengthEngine` (the length trick above).
 - **`Preferences`** (facade enum): typed accessors over `UserDefaults`; setters
-  post `NotificationCenter` notifications that the controller and prefs window
-  observe. There is no other state store.
-- **`PreferencesViewController` / `PreferencesWindowController`**: the only
-  window (storyboard-based), shown on demand from the context menu.
+  post `NotificationCenter` notifications that the controller observes. The
+  native engine also persists remembered sections (`menuBarSectionMemory`).
+- **`SettingsMenu`**: the arrow's right-click menu (Start at Login, Auto
+  Collapse, Quit), built fresh for every presentation.
+- **`StatusBarArrow`**: the arrow's SF Symbol, drawn by an image view inside the
+  status button and changed with the system symbol replace transition
+  (crossfade on macOS 13 and with Reduce Motion).
 
 ## Behavior layers on the core trick
 
@@ -78,7 +80,6 @@ flowchart TD
 | Auto-hide | one-shot `Timer` after expand; at fire, if the pointer sits in any screen's menubar band (`visibleFrame.maxY ... frame.maxY`), it re-arms instead of collapsing | none (single point-in-rect check at fire) |
 | Hover-to-expand (opt-in) | global `.mouseMoved` monitor + 0.5s dwell timer; installed only when the `hoverToExpand` default is true at launch | zero: monitor not installed |
 | Self-restore | `isVisible = true` forced on our items at launch; Cmd-dragging them off otherwise bricks the app (its only UI is those items) | none |
-| Always-hidden section | a second separator item; its own length games, gated by `alwaysHiddenSectionEnabled` | item not created |
 
 ## Autostart
 
@@ -90,11 +91,11 @@ garbage-collects those; see Apple TN3111). The helper app itself is gone.
 
 ## Security posture
 
-Sandboxed (`com.apple.security.app-sandbox`), hardened runtime, no network
-entitlement, no file I/O, no IPC surface, no shell or subprocess use. The only
-dependency is HotKey (a small Carbon `RegisterEventHotKey` wrapper) locked by
-the committed `Package.resolved`. The opt-in hover monitor observes pointer
-position only and discards event payloads. About-window links are hardcoded.
+The App Store build is sandboxed (`com.apple.security.app-sandbox`); the direct
+build is not, so it can read menu-bar positions through Accessibility. Both use
+the hardened runtime, no network entitlement, no IPC surface, no shell or
+subprocess use, and no third-party code. The opt-in hover monitor observes
+pointer position only and discards event payloads.
 A full-tree audit (2026-06) scored 9/10 with hygiene-level findings only.
 
 ## Known architectural limits
@@ -102,9 +103,9 @@ A full-tree audit (2026-06) scored 9/10 with hygiene-level findings only.
 - **The notch**: hidden icons sit "under" the notch area on notched Macs; the
   trick cannot reveal them there. The real fix is a spillover/second-bar design
   (tracked in issues #357/#341/#148; candidate implementations in PRs #350/#358).
-- **macOS 27**: the menu bar re-architecture in macOS 27 betas
-  (`NSMenuBarNavigationSceneExtension`) breaks length-inflation hiding entirely
-  (issue #360). A different mechanism may be required.
+- **macOS 27**: the menu bar re-architecture breaks length-inflation hiding
+  (issue #360). The direct build hides through a private allow-list API instead;
+  the App Store build cannot hide there.
 - **Other apps' open menus**: interaction-awareness is pointer-position-based;
   a pointer deep inside another app's open dropdown is below the menubar band,
   so the collapse can still fire there.

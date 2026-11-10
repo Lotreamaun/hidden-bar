@@ -8,8 +8,8 @@
 import AppKit
 import ApplicationServices
 
-// Lists other apps' status items through public Accessibility API: every running
-// app's AXExtrasMenuBar children, with the owning bundle from the process.
+// Lists other processes' status items through public Accessibility API: every
+// running process's AXExtrasMenuBar children, with its visibility identity.
 // Needs the Accessibility permission, and does not work inside the App Sandbox
 // (the sandbox denies the mach-lookup to com.apple.axserver even when the
 // permission is granted), so only the non-sandboxed direct build uses it.
@@ -34,23 +34,71 @@ final class AccessibilityMenuBarInventory: MenuBarInventoryProviding {
     // Accessibility round-trips to every app take about a second in total, so the
     // walk runs off the main thread.
     func snapshot(completion: @escaping ([MenuBarInventoryItem]) -> Void) {
-        // Only app bundles own status items. Skipping the rest (dozens of WebKit
-        // and XPC helpers, each of which would sit out the timeout) cuts the walk
-        // from ~2.8s to ~1s.
+        // Helpers and system processes can own extras too. Every probe is bounded
+        // by messagingTimeout, so a non-responsive XPC process cannot stall the
+        // collapse indefinitely.
         let ownPID = ProcessInfo.processInfo.processIdentifier
-        let apps = NSWorkspace.shared.runningApplications
-            .filter { $0.processIdentifier != ownPID && $0.bundleURL?.pathExtension == "app" }
-            .map { (pid: $0.processIdentifier, bundleIdentifier: $0.bundleIdentifier) }
+        let processes = NSWorkspace.shared.runningApplications
+            .filter { $0.processIdentifier != ownPID }
+            .map { (pid: $0.processIdentifier,
+                    bundleIdentifier: $0.bundleIdentifier,
+                    localizedName: $0.localizedName) }
         DispatchQueue.global(qos: .userInitiated).async {
-            let items = Self.statusItems(of: apps)
+            let items = Self.statusItems(of: processes)
             DispatchQueue.main.async { completion(items) }
         }
     }
 
-    private static func statusItems(of apps: [(pid: pid_t, bundleIdentifier: String?)]) -> [MenuBarInventoryItem] {
+    // The system controls live under MenuBarAgent, whose extras tree stays
+    // consistent under a restriction, unlike third-party processes.
+    func systemControls(completion: @escaping (Set<String>?) -> Void) {
+        guard let agent = NSWorkspace.shared.runningApplications
+            .first(where: { $0.bundleIdentifier == Self.menuBarAgentBundleIdentifier }) else {
+            return completion(nil)
+        }
+        let pid = agent.processIdentifier
+        DispatchQueue.global(qos: .userInitiated).async {
+            let identifiers = Self.systemControlIdentifiers(of: pid)
+            DispatchQueue.main.async { completion(identifiers) }
+        }
+    }
+
+    private static let menuBarAgentBundleIdentifier = "com.apple.MenuBarAgent"
+    private static let systemControlPrefix = "com.apple.menuextra."
+
+    // The identifiers sit on the children of hosting views inside the extras bar,
+    // so look a few levels down. An unreadable or empty tree is nil, never "all
+    // controls are gone".
+    private static func systemControlIdentifiers(of pid: pid_t) -> Set<String>? {
+        let element = AXUIElementCreateApplication(pid)
+        AXUIElementSetMessagingTimeout(element, messagingTimeout)
+        var barValue: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, "AXExtrasMenuBar" as CFString, &barValue) == .success,
+              let bar = barValue else { return nil }
+        var identifiers = Set<String>()
+        collectControlIdentifiers(in: bar as! AXUIElement, depth: 0, into: &identifiers)
+        return identifiers.isEmpty ? nil : identifiers
+    }
+
+    private static func collectControlIdentifiers(in element: AXUIElement, depth: Int, into identifiers: inout Set<String>) {
+        var identifierValue: CFTypeRef?
+        if AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identifierValue) == .success,
+           let identifier = identifierValue as? String, identifier.hasPrefix(systemControlPrefix) {
+            identifiers.insert(identifier)
+        }
+        guard depth < 4 else { return }
+        var childrenValue: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenValue) == .success,
+              let children = childrenValue as? [AXUIElement] else { return }
+        for child in children {
+            collectControlIdentifiers(in: child, depth: depth + 1, into: &identifiers)
+        }
+    }
+
+    private static func statusItems(of processes: [(pid: pid_t, bundleIdentifier: String?, localizedName: String?)]) -> [MenuBarInventoryItem] {
         var items: [MenuBarInventoryItem] = []
-        for app in apps {
-            let element = AXUIElementCreateApplication(app.pid)
+        for process in processes {
+            let element = AXUIElementCreateApplication(process.pid)
             // The default timeout is several seconds per app, and one busy or hung
             // app then stalls the collapse (measured: ~18s on a normal session).
             AXUIElementSetMessagingTimeout(element, messagingTimeout)
@@ -62,10 +110,23 @@ final class AccessibilityMenuBarInventory: MenuBarInventoryProviding {
                   let children = childrenValue as? [AXUIElement] else { continue }
             for child in children {
                 guard let frame = frame(of: child) else { continue }
-                items.append(MenuBarInventoryItem(bundleIdentifier: app.bundleIdentifier, frame: frame))
+                items.append(MenuBarInventoryItem(identity: identity(for: process.bundleIdentifier),
+                                                  frame: frame,
+                                                  processIdentifier: process.pid,
+                                                  processName: process.localizedName))
             }
         }
         return items
+    }
+
+    private static func identity(for bundleIdentifier: String?) -> MenuBarVisibilityIdentity {
+        guard let bundleIdentifier = bundleIdentifier else {
+            return .unclassifiable(reason: "missing bundle identifier")
+        }
+        if MenuBarLayoutResolver.systemItemOwners.contains(bundleIdentifier) {
+            return .system(ownerBundleIdentifier: bundleIdentifier)
+        }
+        return .application(bundleIdentifier: bundleIdentifier)
     }
 
     // Accessibility frames use a top-left origin, AppKit's bottom-left. Only the

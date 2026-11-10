@@ -10,20 +10,6 @@ import Foundation
 
 enum Preferences {
     
-    static var globalKey: GlobalKeybindPreferences? {
-        get {
-            guard let data = UserDefaults.standard.value(forKey: UserDefaults.Key.globalKey) as? Data else { return nil }
-            return try? JSONDecoder().decode(GlobalKeybindPreferences.self, from: data)
-        }
-        
-        set {
-            guard let data = try? JSONEncoder().encode(newValue) else { return }
-            UserDefaults.standard.set(data, forKey: UserDefaults.Key.globalKey)
-            
-            NotificationCenter.default.post(Notification(name: .prefsChanged))
-        }
-    }
-    
     static var isAutoStart: Bool {
         get {
             return UserDefaults.standard.bool(forKey: UserDefaults.Key.isAutoStart)
@@ -31,7 +17,7 @@ enum Preferences {
         
         set {
             // Apply first, then persist the outcome: on failure the stored value
-            // stays at the previous state so the prefs checkbox shows reality
+            // stays at the previous state so the menu's checkmark shows reality
             // instead of the intent.
             let applied = Util.setUpAutoStart(isAutoStart: newValue)
             UserDefaults.standard.set(applied ? newValue : isAutoStart, forKey: UserDefaults.Key.isAutoStart)
@@ -64,39 +50,6 @@ enum Preferences {
         }
     }
     
-    static var isShowPreference: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: UserDefaults.Key.isShowPreference)
-        }
-        
-        set {
-            UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.isShowPreference)
-            
-            NotificationCenter.default.post(Notification(name: .prefsChanged))
-        }
-    }
-    
-    static var areSeparatorsHidden: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: UserDefaults.Key.areSeparatorsHidden)
-        }
-        
-        set {
-            UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.areSeparatorsHidden)
-        }
-    }
-    
-    static var alwaysHiddenSectionEnabled: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: UserDefaults.Key.alwaysHiddenSectionEnabled)
-        }
-        
-        set {
-            UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.alwaysHiddenSectionEnabled)
-            NotificationCenter.default.post(Notification(name: .alwayHideToggle))
-        }
-    }
-    
     static var hoverToExpand: Bool {
         get {
             UserDefaults.standard.bool(forKey: UserDefaults.Key.hoverToExpand)
@@ -104,26 +57,6 @@ enum Preferences {
 
         set {
             UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.hoverToExpand)
-        }
-    }
-
-    static var useFullStatusBarOnExpandEnabled: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: UserDefaults.Key.useFullStatusBarOnExpandEnabled)
-        }
-
-        set {
-            UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.useFullStatusBarOnExpandEnabled)
-        }
-    }
-
-    static var notchOverflowEnabled: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: UserDefaults.Key.notchOverflowEnabled)
-        }
-
-        set {
-            UserDefaults.standard.set(newValue, forKey: UserDefaults.Key.notchOverflowEnabled)
         }
     }
 }

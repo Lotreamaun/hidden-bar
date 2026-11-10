@@ -14,18 +14,18 @@ import AppKit
 protocol MenuBarEngine: AnyObject {
     var state: MenuBarEngineState { get }
 
-    func collapse(completion: @escaping (CollapseResult) -> Void)
+    func collapse(origin: CollapseOrigin, completion: @escaping (CollapseResult) -> Void)
     func expand()
 
-    func updateAlwaysHiddenSection(enabled: Bool, separatorHidden: Bool)
+    // Called with true the moment icons are hidden and with false when a collapse
+    // that already hid them is undone, ahead of the collapse's completion, so the
+    // arrow can change together with the icons.
+    var onHidingChange: ((Bool) -> Void)? { get set }
 
     // Whether the user's ⌘-drag arrangement lets the engine hide anything: its
     // hiding boundary must sit on the hidden side of the arrow. The controller
     // does not collapse otherwise.
     var isArrangementValid: Bool { get }
-
-    // Whether the always-hidden separator sits beyond the regular hidden section.
-    var isAlwaysHiddenSeparatorPlaced: Bool { get }
 
     // Display geometry changed. Re-applies the collapse to the live items when
     // collapsed, so a hot-plug does not leave a stale length behind (PR #354).
@@ -39,9 +39,19 @@ enum MenuBarEngineState {
     case unavailable
 }
 
+// Who asked for the collapse. A system control the engine cannot keep visible
+// stops an automatic collapse but not one the user asked for.
+enum CollapseOrigin {
+    case user
+    case automatic
+}
+
 enum CollapseResult {
     case collapsed
     case unavailable
+    // Declined because a system control would be hidden; the bar stays expanded
+    // and the caller may try again later.
+    case held
 }
 
 enum MenuBarOrder {
@@ -59,5 +69,4 @@ enum MenuBarOrder {
 protocol MenuBarItemProvider: AnyObject {
     var toggleItem: NSStatusItem { get }
     var separatorItem: NSStatusItem { get }
-    var alwaysHiddenItem: NSStatusItem? { get }
 }

@@ -19,6 +19,7 @@ static NSError *HBNativeVisibilityError(NSString *reason) {
 
 #import <dlfcn.h>
 #import <objc/message.h>
+#include <stdint.h>
 
 // MenuBarClientCore is the private framework behind macOS 27's assessment
 // (exam lockdown) mode, which can restrict the menu bar to an allow-list. It is
@@ -28,9 +29,36 @@ static NSString *const HBFrameworkPath = @"/System/Library/PrivateFrameworks/Men
 static NSString *const HBConfigurationClassName = @"MBAssessmentModeConfiguration";
 static NSString *const HBAssertionClassName = @"MBAssessmentModeAssertion";
 
+// The supported system-item identities are the cases of the framework's Swift
+// RawRepresentable enum. Its synthesized allCases getter is the only complete
+// list; the unrestricted configuration returns an empty allow-list instead.
+static NSString *const HBSystemItemIdentifierAllCases =
+    @"$s17MenuBarClientCore22MBSystemItemIdentifierO8allCasesSayACGvgZ";
+
 static SEL HBConfigurationInit(void) { return @selector(initWithAllowedSystemItems:allowedBundleIdentifiers:); }
 static SEL HBActivate(void) { return @selector(activateWithConfiguration:completionHandler:); }
 static SEL HBInvalidate(void) { return @selector(invalidate); }
+
+// Swift Array storage is a single pointer: a two-word heap header, then count
+// and capacity, then one word per trivial element. The enum is Int-backed.
+static NSArray<NSNumber *> *HBSystemItemsFromSwiftArray(void *storagePointer) {
+    if (storagePointer == NULL) {
+        return nil;
+    }
+    uintptr_t *storage = (uintptr_t *)storagePointer;
+    int64_t count = (int64_t)storage[2];
+    if (count <= 0 || count > 256) {
+        return nil;
+    }
+    int64_t *elements = (int64_t *)&storage[4];
+    NSMutableArray<NSNumber *> *items = [NSMutableArray arrayWithCapacity:(NSUInteger)count];
+    for (int64_t index = 0; index < count; index++) {
+        [items addObject:@(elements[index])];
+    }
+    return items;
+}
+
+extern void swift_release(void *object);
 
 BOOL HBNativeVisibilityIsAvailable(void) {
     if (!dlopen(HBFrameworkPath.fileSystemRepresentation, RTLD_NOW | RTLD_LOCAL)) {
@@ -42,6 +70,36 @@ BOOL HBNativeVisibilityIsAvailable(void) {
         && [configuration instancesRespondToSelector:HBConfigurationInit()]
         && [assertion instancesRespondToSelector:HBActivate()]
         && [assertion instancesRespondToSelector:HBInvalidate()];
+}
+
+NSArray<NSNumber *> * HBNativeVisibilitySupportedSystemItems(void) {
+    if (!HBNativeVisibilityIsAvailable()) {
+        return nil;
+    }
+    void *handle = dlopen(HBFrameworkPath.fileSystemRepresentation, RTLD_NOW | RTLD_LOCAL);
+    if (!handle) {
+        return nil;
+    }
+    void *(*allCases)(void) = (void *(*)(void))dlsym(handle, HBSystemItemIdentifierAllCases.UTF8String);
+    if (!allCases) {
+        NSLog(@"NativeVisibility: could not find the supported system-item list");
+        dlclose(handle);
+        return nil;
+    }
+    void *array = NULL;
+    @try {
+        array = allCases();
+    } @catch (NSException *exception) {
+        NSLog(@"NativeVisibility: could not obtain supported system items: %@: %@", exception.name, exception.reason);
+        dlclose(handle);
+        return nil;
+    }
+    NSArray<NSNumber *> *items = HBSystemItemsFromSwiftArray(array);
+    if (array != NULL) {
+        swift_release(array);
+    }
+    dlclose(handle);
+    return items;
 }
 
 void HBNativeVisibilityActivate(NSArray<NSNumber *> *allowedSystemItems,
@@ -88,6 +146,10 @@ void HBNativeVisibilityInvalidate(id assertion) {
 
 BOOL HBNativeVisibilityIsAvailable(void) {
     return NO;
+}
+
+NSArray<NSNumber *> * HBNativeVisibilitySupportedSystemItems(void) {
+    return nil;
 }
 
 void HBNativeVisibilityActivate(NSArray<NSNumber *> *allowedSystemItems,

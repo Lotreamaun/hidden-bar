@@ -6,18 +6,11 @@
   Copyright © 2020 Dwarves Foundation. All rights reserved.
 */
 
-"Preferences..." = "Voreinstellungen…";
-"Toggle Auto Collapse" = "Automatisch einklappen";
-"Enable Auto Collapse" = "Automatisch einklappen einschalten";
-"Disable Auto Collapse" = "Automatisch einklappen ausschalten";
-"Quit" = "Beenden";
-"Set Shortcut" = "Shortcut einstellen";
-"Tutorial text" = "
-Verwende die “permanent ausgeblendet“ Funktion um deine Menüleistensymbole aufgeräumt zu halten.. Und so funktioniert es..
-Zum einschalten:
-1. Aktiviere permanent ausgeblendet “|” (transluzenter Farbstreifen)
-2. Halte  ⌘ und ziehe es auf die linke Seite der normalen Leiste, verschiebe dann die Symbole die ausgeblendet werden sollen auf die linke Seite dieser Leiste.
-3. Abschließend klicke mit der rechten Maustaste auf das Einklappen Symbol “<” um sie auszublenden.
-Zum Anzeigen der permanent ausgeblendeten Symbole:
-1. Klicke mit der rechten Maustaste nochmals auf das Einklappen Symbol “<” um sie anzuzeigen und wiederhole den Schritt um die Funktion zu aktivieren. Viel Spaß 😉!
-";
+"Start at Login" = "Bei der Anmeldung starten";
+"Auto Collapse" = "Automatisch einklappen";
+"Off" = "Aus";
+"%ld seconds" = "%ld Sekunden";
+"1 minute" = "1 Minute";
+"Quit Hidden Bar" = "Hidden Bar beenden";
+"Could not update the login item" = "Anmeldeobjekt konnte nicht geändert werden";
+"Check System Settings > General > Login Items and make sure Hidden Bar is allowed." = "Prüfe in Systemeinstellungen > Allgemein > Anmeldeobjekte, ob Hidden Bar erlaubt ist.";

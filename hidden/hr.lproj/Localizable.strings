@@ -6,18 +6,11 @@
   Copyright © 2020 Dwarves Foundation. All rights reserved.
 */
 
-"Preferences..." = "Postavke …";
-"Toggle Auto Collapse" = "Uklj/Isklj automatsko sklapanje";
-"Enable Auto Collapse" = "Uključi automatsko sklapanje";
-"Disable Auto Collapse" = "Isključi automatsko sklapanje";
-"Quit" = "Zatvori program";
-"Set Shortcut" = "Postavi prečac";
-"Tutorial text" = "
- Koristi funkciju skrivanja ikona za održavanje reda u traci izbornika. Postavlja se na sljedeći način
- Koraci za uključivanje:
- 1. Uključi uvijek skriveno „|” (poluprozirna okomita crta)
- 2. Pritisni i povuci ⌘ na lijevu stranu standardne trake, zatim premjesti ikone koje želiš sakriti na lijevu stranu te trake.
- 3. Na kraju pritisni desnom tipkom miša na ikonu za sklapanje „<” kako bi se ikone sakrile.
- Koraci za prikazivanje uvijek skrivenih ikona:
- 1. Pritisni desnom tipkom miša ponovo na ikonu „<” i ponovi radnju za uključivanje funkcije. Uživaj 😉!
-";
+"Start at Login" = "Pokreni nakon prijave";
+"Auto Collapse" = "Automatsko sklapanje";
+"Off" = "Isključeno";
+"%ld seconds" = "%ld s";
+"1 minute" = "1 min";
+"Quit Hidden Bar" = "Zatvori Hidden Bar";
+"Could not update the login item" = "Stavka prijave nije promijenjena";
+"Check System Settings > General > Login Items and make sure Hidden Bar is allowed." = "Provjerite u Postavkama sustava > Općenito > Stavke prijave je li Hidden Bar dopušten.";
