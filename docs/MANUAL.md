@@ -5,8 +5,7 @@ Everything Hidden Bar can do, including the parts with no UI.
 ## Basics
 
 - **Left-click the arrow** (`<` / `>`): expand or collapse the hidden section.
-  Option-click does the same. The arrow changes with the system's symbol
-  animation (a crossfade on macOS 13 and with Reduce Motion).
+  Option-click does the same.
 - **Right-click the arrow** or **left-click the separator** (`|`): the settings
   menu, see below.
 - **⌘-drag** icons in the menu bar to move them across the separator: icons to
@@ -51,8 +50,8 @@ Hidden Bar therefore does the following:
   (the launch-time collapse and the auto-collapse timer). The bar collapses by
   itself once the indicator is gone, if auto collapse is on.
 - **You can still collapse by hand** (click the arrow). That hides the
-  indicator, and automatic collapses then work normally for the rest of that
-  Focus. The next time a Focus turns on, they wait again.
+  indicator until you expand the bar again. Automatic collapses stay off
+  while Focus is on, also after a manual collapse.
 - **Known gap**: a Focus that turns on while the bar is already collapsed is
   not shown until you next expand the bar. macOS gives no usable signal for
   it.
@@ -116,7 +115,7 @@ To undo any of them: `defaults delete com.dwarvesv.minimalbar <key>`.
 | App language stuck | See the `AppleLanguages` command above, or System Settings > General > Language & Region > Applications |
 | Nothing hides on macOS 27 | The App Store build cannot hide there (issue #360); use the direct download build and grant Accessibility |
 | A new or just-updated app's icon shows up already hidden | Expected on macOS 13–26, see "Why new icons start hidden" below; ⌘-drag it to the right of the separator once |
-| macOS 27: the bar does not auto-collapse | A Focus is on: collapse once by hand, or see "Focus and other controls" above. Otherwise check the Accessibility permission |
+| macOS 27: the bar does not auto-collapse | A Focus is on: auto collapse is off while it is, see "Focus and other controls" above; click the arrow to collapse. Otherwise check the Accessibility permission |
 | macOS 27: the Focus indicator is missing | It turned on while the bar was collapsed; expand the bar |
 | macOS 27: an icon left of the arrow is not hidden | Hidden Bar has not seen it there yet; expand and collapse once more. If it persists, the app may have no bundle identifier (logged in Console) |
 

@@ -38,8 +38,7 @@ disappeared.
   each activation that none disappeared. A system control that cannot be
   allowed (Focus) is not hidden by an automatic collapse while it is on
   screen: auto-collapse waits until the control goes away. The user can still
-  collapse by hand; that choice is kept until the control leaves the menu
-  bar.
+  collapse by hand; automatic collapses keep waiting while the control is shown.
 - Accept one known gap: a control that cannot be allowed and that appears
   while the bar is already collapsed stays hidden until the next expand. The
   only working detection found is a log-stream workaround, which is left out
@@ -56,10 +55,10 @@ disappeared.
   5, 10, 15, 30 seconds, 1 minute), and Quit. The global shortcut, Notch
   Overflow, "Show preferences on launch", and "Use the full menu bar on
   expanding" are removed; their stored preferences are ignored.
-- Animate the arrow like the system's own controls: it becomes an SF Symbol
-  chevron that switches with the system symbol replace transition (a
-  crossfade on macOS 13 and with Reduce Motion), at the moment the icons are
-  hidden or shown rather than after later checks.
+- Switch the arrow with the icons: it becomes an SF Symbol chevron set as the
+  button's image, changed at the moment the icons are hidden or shown rather
+  than after later checks. No animation: a symbol transition replayed on
+  Space switches.
 - Make diagnostics readable in Console (they are currently redacted as
   `<private>`).
 - Unit coverage for the new allow-list derivation, section memory, system
@@ -88,6 +87,6 @@ disappeared.
   and tests, and the HotKey package dependency.
 - Hiding behavior changes only in the direct, non-sandboxed macOS 27 build;
   macOS 13–26 and the App Store build keep the legacy mechanism. The removals,
-  the settings menu, and the arrow transition apply to every build.
+  the settings menu, and the arrow change apply to every build.
 - Adds one persisted preference (remembered sections) and stops reading
   several; no new dependency or public API is introduced.

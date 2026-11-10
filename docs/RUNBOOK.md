@@ -31,8 +31,8 @@ xcodebuild -project 'Hidden Bar.xcodeproj' -scheme 'Hidden Bar' \
 ```
 
 `HiddenBarTests` covers the layout resolver, the section memory and the native
-engine; `HiddenTests` (hosted in the app) covers the settings menu and the
-default preferences. The scheme runs both targets.
+engine; `HiddenTests` (hosted in the app) covers the settings menu, the arrow,
+and the default preferences. The scheme runs both targets.
 
 ## Behavioral verification
 
@@ -89,13 +89,13 @@ collapse is waiting for. Checks:
   hidden: it stays hidden;
 - Focus on, bar expanded: the auto-collapse logs `collapse held` and the bar
   stays expanded; a click on the arrow collapses it, and after the next expand
-  the auto-collapse goes through; Focus off, then on again: held again;
+  the auto-collapse is held again;
 - Focus off while held: the bar collapses at the next auto-collapse tick;
 - Focus turned on while collapsed: nothing happens until the next expand,
   where the indicator shows (known gap, by design);
-- the arrow changes with the symbol replace transition as the icons go (not
-  after them), crossfades with Reduce Motion on, and turns back when a held
-  collapse is undone; rapid clicks end on the right glyph.
+- the arrow changes as the icons go (not after them), turns back when a held
+  collapse is undone, ends on the right glyph after rapid clicks, and does not
+  flip when switching Spaces.
 
 The remembered sections are stored under `menuBarSectionMemory` in the prefs
 domain; `defaults delete com.dwarvesv.minimalbar menuBarSectionMemory` resets

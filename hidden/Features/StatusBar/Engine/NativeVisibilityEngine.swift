@@ -30,7 +30,8 @@ import os
 //   (the most visible section wins).
 // - macOS's own items (clock, Wi-Fi, Control Center...) are always allowed. A few
 //   (Focus) cannot be allowed by any identifier; the engine notices when one
-//   disappears after an activation and refuses to hide it on an automatic collapse.
+//   disappears after an activation, and automatic collapses wait while it is on
+//   screen. A collapse by click still hides it.
 // - A Focus that turns on while collapsed is not shown until the next expand.
 final class NativeVisibilityEngine: MenuBarEngine {
     private weak var items: MenuBarItemProvider?
@@ -61,8 +62,6 @@ final class NativeVisibilityEngine: MenuBarEngine {
     // System controls that disappeared after an activation, so no allow-list can
     // keep them. Learned at runtime: the identifier set can change in a point release.
     private var nonAllowableControls: Set<String> = []
-    // Of those, the ones the user chose to hide by collapsing by hand.
-    private var dismissedControls: Set<String> = []
 
     private var launchObserver: NSObjectProtocol?
     private let workspaceNotifications: NotificationCenter
@@ -131,11 +130,7 @@ final class NativeVisibilityEngine: MenuBarEngine {
         // that has to wait for one of them then costs no walk over every app.
         inventory.systemControls { [weak self] before in
             guard let self = self, generation == self.generation else { return }
-            // An unrestricted bar shows every control, so one that is gone has left.
-            if let before = before, self.assertion == nil {
-                self.dismissedControls.formIntersection(before)
-            }
-            let blocking = (before ?? []).intersection(self.nonAllowableControls).subtracting(self.dismissedControls)
+            let blocking = (before ?? []).intersection(self.nonAllowableControls)
             if origin == .automatic, !blocking.isEmpty {
                 return self.hold(blocking, completion: completion)
             }
@@ -164,12 +159,11 @@ final class NativeVisibilityEngine: MenuBarEngine {
                 guard let self = self else { return }
                 if !lost.isEmpty {
                     self.nonAllowableControls.formUnion(lost)
-                    if origin == .automatic, !lost.subtracting(self.dismissedControls).isEmpty {
+                    if origin == .automatic {
                         self.releaseAssertion()
                         self.onHidingChange?(false)
-                        return self.hold(lost.subtracting(self.dismissedControls), completion: completion)
+                        return self.hold(lost, completion: completion)
                     }
-                    self.dismissedControls.formUnion(lost)
                     self.log.info("collapse by request hides system controls \(lost.sorted().joined(separator: ","), privacy: .public)")
                 }
                 self.state = .collapsed

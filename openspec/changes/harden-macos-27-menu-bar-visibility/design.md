@@ -88,8 +88,7 @@ Hidden Bar's own controls, examined on the same machine:
   collapse. The user can still collapse by hand while it is shown.
 - Hidden Bar is configured entirely from the arrow's menu, with only the
   settings people change.
-- Switching between collapsed and expanded looks like the system's own
-  controls, and the arrow changes together with the icons.
+- The arrow changes together with the icons, with no visual artefacts.
 - Failures are diagnosable from Console.
 
 **Non-Goals:**
@@ -105,6 +104,7 @@ Hidden Bar's own controls, examined on the same machine:
 - Detecting a non-allowable system control that appears while the bar is
   already collapsed.
 - Animating other applications' icons; macOS moves them.
+- Animating the arrow (dropped after it replayed on Space switches).
 - A global shortcut, an always-hidden section, or Notch Overflow.
 
 ## Decisions
@@ -162,14 +162,18 @@ What happens next depends on who asked for the collapse:
   restriction and hold the bar expanded. While held, the bar is unrestricted,
   so the tree is polled at a low rate; when the blocking control is gone, the
   pending collapse proceeds if auto-collapse is on.
-- A collapse the user asked for (a click on the arrow) stands. The blocking
-  identifiers are marked dismissed, and automatic collapses ignore dismissed
-  controls. The dismissal ends when the control is observed absent from an
-  unrestricted bar, so the next appearance is treated as new.
+- A collapse the user asked for (a click on the arrow) stands, and the bar
+  stays collapsed until the user expands it. Automatic collapses do not learn
+  from it: after the next expand they wait again while the control is shown.
 
-Always holding the bar open is rejected because the user wants to be able to
-put the indicator away. Always collapsing is rejected because the silently
-hidden Focus icon is the behavior this change exists to remove.
+Forbidding the manual collapse is rejected because the user wants to be able
+to put the indicator away. Always collapsing is rejected because the silently
+hidden Focus icon is the behavior this change exists to remove. An earlier
+revision let one manual collapse turn automatic collapses back on until the
+control was seen gone; it was dropped by decision, because macOS gives every
+Focus the same identifier and a Focus that ended and restarted while the bar
+stayed collapsed counted as the old one, and because a predictable "auto
+collapse is off while Focus is on" is easier to live with.
 
 ### Do not detect controls that appear while collapsed
 
@@ -250,32 +254,35 @@ Removed with the window, by decision:
 
 `hoverToExpand` stays a Terminal-only setting; it has no UI today.
 
-### Animate the arrow like the system's own controls
+### Switch the arrow with the icons, without animation
 
 The arrow becomes an SF Symbol, `chevron.left` / `chevron.right` at 12 pt
-semibold (the height and stroke of the bitmap it replaces), in the same
-orientation as the current glyphs. The direction is chosen explicitly from the
-UI's layout direction, as `Assets` did: relying on `forward`/`backward`
-mirroring could not be checked in a right-to-left session and would flip twice
-if combined with the explicit choice. The double chevrons are left to the
-system's overflow control so the two are not confused.
+semibold (the height and stroke of the bitmap it replaces), drawn centred on a
+16 × 16 template canvas so the item keeps its width, in the same orientation
+as the current glyphs. The direction is chosen explicitly from the UI's layout
+direction, as `Assets` did: relying on `forward`/`backward` mirroring could
+not be checked in a right-to-left session and would flip twice if combined
+with the explicit choice. The double chevrons are left to the system's
+overflow control so the two are not confused.
 
-The symbol is drawn by an `NSImageView` hosted in the status item's button
-(the button's own image cannot take a content transition). On macOS 14 and
-later the glyph changes with `setSymbolImage(_:contentTransition:)` and the
-replace transition, the standard animation for a symbol that changes meaning.
-On macOS 13, and when Reduce Motion is on, it crossfades. The button keeps the
-accessibility label and press action.
+The glyph is the button's own image and changes without animation. A first
+version drew the symbol in an `NSImageView` hosted in the button and changed it
+with the symbol replace transition (crossfade on macOS 13 and with Reduce
+Motion). In use, switching Spaces made the arrow flip back and forth before
+settling, as if the last transition replayed. The cause could not be
+confirmed without switching the user's Spaces: the transition does not show
+up as layer animations, so an off-screen probe saw nothing. By decision the
+animation was dropped rather than shipped with a suspected artefact; the
+button image is what the status bar itself redraws on every Space.
 
 The glyph follows the icons. The engine reports when hiding takes effect (on
 macOS 27, when the restriction is active, before the system-control check),
 and the controller switches the glyph then. If the check undoes an automatic
-collapse, or activation fails, the glyph switches back with the same
-transition. The legacy engine reports at once. Each change targets the
-current state, so rapid toggles end on the right glyph.
+collapse, or activation fails, the glyph switches back. The legacy engine
+reports at once.
 
-Rejected: rotating one chevron (not how the system's controls change), a
-custom spring on the button's layer (the status bar owns that layer), and
+Rejected: rotating one chevron, a custom animation on the button's layer (the
+status bar owns that layer, and it would risk the same artefact), and
 animating the item's width (macOS 27 ejects wide items).
 
 ### Readable diagnostics
@@ -287,9 +294,10 @@ logged.
 
 ## Risks / Trade-offs
 
-- [Focus is on for long periods, so the bar stays expanded] → One manual
-  collapse puts it away until Focus next turns on; described in the manual. A
-  separator-width fallback is listed as a follow-up, not attempted here.
+- [Focus is on for long periods, so the bar stays expanded after each expand]
+  → Accepted by decision; a click on the arrow collapses it until the next
+  expand. Described in the manual. A separator-width fallback is listed as a
+  follow-up, not attempted here.
 - [A Focus turns on while the bar is collapsed] → Its indicator stays hidden
   until the next expand. Accepted by decision; described in the manual.
 - [Allow-list grows to every running bundle] → A few hundred short strings per
@@ -314,6 +322,9 @@ logged.
 - [On macOS 27, an undone automatic collapse now switches the arrow twice]
   → It matches what the icons do; the alternative leaves the arrow behind the
   icons on every collapse.
+- [The arrow no longer animates] → Accepted by decision over a suspected
+  replay artefact on Space switches; an animation can return once it can be
+  checked on a live bar.
 
 ## Migration Plan
 
@@ -323,12 +334,12 @@ logged.
 3. Remove the always-hidden section, the preferences window and About, the
    global shortcut, and Notch Overflow; build the settings menu; update
    localized strings.
-4. Switch the arrow to the symbol transition, driven by the engine's report.
+4. Switch the arrow at the engine's report, as the button's image.
 5. Build the direct scheme, run the XCTest targets, lint string tables.
 6. Validate on macOS 27.2: input-source menu across repeated auto-collapses,
    Focus turned on while expanded and while collapsed, a manual collapse
-   during Focus, Focus off, an app launched while collapsed, the settings
-   menu, and the arrow transition with and without Reduce Motion.
+   during Focus followed by an expand, Focus off, an app launched while collapsed, the settings
+   menu, and the arrow across Space switches.
    Live Activities are checked if one can be produced.
 7. Ship in the direct distribution. Reverting restores the previous engine;
    the persisted section map is ignored by older builds.

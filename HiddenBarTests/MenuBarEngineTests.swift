@@ -566,33 +566,39 @@ final class NativeVisibilityEngineTests: XCTestCase {
         XCTAssertEqual(engine.state, .collapsed)
     }
 
-    func testCollapseByRequestStandsAndIsRememberedUntilTheControlLeaves() {
+    func testCollapseByRequestStandsWhileFocusIsShown() {
         focusOn = true
         let engine = makeEngine()
         collapse(engine)   // learns that Focus cannot be allowed
 
         XCTAssertEqual(collapse(engine, origin: .user), .collapsed)
         XCTAssertEqual(engine.state, .collapsed)
-
-        engine.expand()
-        XCTAssertEqual(collapse(engine, origin: .automatic), .collapsed, "automatic collapses ignore a dismissed control")
     }
 
-    func testDismissalEndsWhenTheControlLeavesAnUnrestrictedBar() {
+    func testAutomaticCollapsesWaitAgainAfterACollapseByRequest() {
         focusOn = true
         let engine = makeEngine()
-        collapse(engine)
-        collapse(engine, origin: .user)
+        collapse(engine, origin: .user)   // learns Focus and hides it by request
+        engine.expand()
+
+        let requests = visibility.requests.count
+        XCTAssertEqual(collapse(engine, origin: .automatic), .held, "a manual collapse does not turn auto collapse back on")
+        XCTAssertEqual(visibility.requests.count, requests)
+        XCTAssertEqual(engine.state, .expanded)
+    }
+
+    func testCollapseByRequestBeforeFocusIsKnownStillTeachesIt() {
+        focusOn = true
+        let engine = makeEngine()
+        XCTAssertEqual(collapse(engine, origin: .user), .collapsed)
         engine.expand()
 
         focusOn = false
-        XCTAssertEqual(collapse(engine), .collapsed)
+        XCTAssertEqual(collapse(engine), .collapsed, "auto collapse resumes once Focus is off")
         engine.expand()
 
         focusOn = true
-        let requests = visibility.requests.count
-        XCTAssertEqual(collapse(engine), .held, "the next appearance is new")
-        XCTAssertEqual(visibility.requests.count, requests)
+        XCTAssertEqual(collapse(engine), .held)
     }
 
     func testUnreadableControlTreeNeverBlocksCollapse() {

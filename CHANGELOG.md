@@ -9,13 +9,13 @@
 
 ### Changed
 - All settings are in the arrow's right-click menu: Start at Login, Auto Collapse (Off, 5, 10, 15, 30 seconds, 1 minute; a delay set from Terminal is listed too), and Quit Hidden Bar.
-- The arrow is now an SF Symbol and changes with the system's symbol animation (a crossfade on macOS 13 and with Reduce Motion). On macOS 27 it changes as the icons disappear instead of a moment later.
+- The arrow is now an SF Symbol. On macOS 27 it changes as the icons disappear instead of a moment later.
 
 ### Fixed
 - macOS 27.2 (direct download build): icons that were never placed in a hidden section no longer disappear on collapse. Hidden Bar now hides only apps it last saw on the hidden side of the arrow and remembers that across collapses and restarts; an app missing from a reading (the input-source menu, for one) keeps its place and an app never seen stays visible.
 - macOS 27.2 (direct download build): an app launched while the bar is collapsed is visible unless it was last seen hidden.
 - macOS 27.2 (direct download build): menu-bar system controls (Control Center, clock, Wi-Fi, Sound, battery, and the microphone/camera indicators) stay visible when collapsing. The allow-list comes from the complete system-item set exposed by the running macOS instead of a fixed range.
-- macOS 27.2 (direct download build): the Focus indicator, which macOS hides under any restriction, is no longer hidden by an automatic collapse. Auto collapse waits while it is shown and resumes when it is gone; collapsing by hand still works and is respected for the rest of that Focus. Known gap: a Focus turned on while the bar is collapsed shows at the next expand.
+- macOS 27.2 (direct download build): the Focus indicator, which macOS hides under any restriction, is no longer hidden by an automatic collapse. Auto collapse is off while it is shown and resumes when it is gone; clicking the arrow still collapses the bar. Known gap: a Focus turned on while the bar is collapsed shows at the next expand.
 - macOS 27.2 (direct download build): menu-bar extras owned by helper or background processes follow their position relative to the arrow.
 - macOS 27 (direct download build): diagnostics are readable in Console (subsystem `com.dwarvesv.minimalbar`, category `visibility`) instead of `<private>`.
 

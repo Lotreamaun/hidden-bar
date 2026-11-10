@@ -44,19 +44,15 @@ system SHALL not expand the menu bar by itself for this reason.
 ### Requirement: Honor a manual collapse while a system control is shown
 The system SHALL collapse the menu bar when the user requests it by clicking
 the arrow even if that hides a system control the restriction cannot allow.
-After such a collapse, automatic collapses SHALL proceed normally until that
-control leaves the menu bar; its next appearance SHALL be treated as new.
+Automatic collapses SHALL keep waiting while such a control is shown, also
+after a manual collapse.
 
 #### Scenario: User collapses during Focus
 - **WHEN** the Focus indicator is shown and the user clicks the arrow to collapse
-- **THEN** the menu bar collapses and stays collapsed while that Focus remains on
+- **THEN** the menu bar collapses and stays collapsed until the user expands it
 
 #### Scenario: User expands again during the same Focus
 - **WHEN** the user collapsed by hand during a Focus, later expands the bar, and the auto-collapse timer fires
-- **THEN** the menu bar collapses as it would without a Focus
-
-#### Scenario: Focus turns on again later
-- **WHEN** the user collapsed by hand during a Focus, that Focus ended while the bar was expanded, and a Focus is on again at a later auto-collapse
 - **THEN** the menu bar stays expanded and the Focus indicator is visible
 
 ### Requirement: Hide only items observed in a hidden section
@@ -177,26 +173,26 @@ launches. Every title SHALL be localized in every string table.
 - **WHEN** Hidden Bar launches
 - **THEN** no window opens and no global shortcut is registered
 
-### Requirement: Animate the arrow between states
-The arrow SHALL be drawn as a system chevron symbol and SHALL change between
-its collapsed and expanded glyphs with the system symbol replace transition on
-macOS 14 and later, and with a short crossfade on macOS 13 or when Reduce
-Motion is on. The glyph SHALL change when icons are hidden or shown, not after
-later checks, and SHALL change back with the same transition when a collapse
-is undone or fails. The arrow SHALL keep its position, its direction in
-right-to-left languages, and its accessibility label and press action.
+### Requirement: Switch the arrow with the icons
+The arrow SHALL be drawn as a system chevron symbol set as the status button's
+image, and SHALL change between its collapsed and expanded glyphs without
+animation. The glyph SHALL change when icons are hidden or shown, not after
+later checks, and SHALL change back when a collapse is undone or fails. The
+arrow SHALL keep its width, its direction in right-to-left languages, and its
+accessibility label and press action, and SHALL NOT change when nothing is
+hidden or shown.
 
-#### Scenario: Collapse on macOS 14 or later
+#### Scenario: Collapse takes effect
 - **WHEN** a collapse takes effect
-- **THEN** the arrow switches to the collapsed glyph with the symbol replace transition as the icons disappear
-
-#### Scenario: Reduce Motion
-- **WHEN** Reduce Motion is on and the bar collapses or expands
-- **THEN** the arrow crossfades between glyphs without movement
+- **THEN** the arrow shows the collapsed glyph as the icons disappear
 
 #### Scenario: Automatic collapse is undone
 - **WHEN** an automatic collapse is undone because it hid a system control
-- **THEN** the arrow returns to the expanded glyph with a transition rather than an instant swap
+- **THEN** the arrow shows the expanded glyph again
+
+#### Scenario: Switching Spaces
+- **WHEN** the user switches to another Space or desktop
+- **THEN** the arrow keeps its glyph without flipping
 
 #### Scenario: Rapid toggling
 - **WHEN** the user toggles the bar several times quickly

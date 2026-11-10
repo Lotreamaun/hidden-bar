@@ -69,9 +69,9 @@ flowchart TD
   native engine also persists remembered sections (`menuBarSectionMemory`).
 - **`SettingsMenu`**: the arrow's right-click menu (Start at Login, Auto
   Collapse, Quit), built fresh for every presentation.
-- **`StatusBarArrow`**: the arrow's SF Symbol, drawn by an image view inside the
-  status button and changed with the system symbol replace transition
-  (crossfade on macOS 13 and with Reduce Motion).
+- **`StatusBarArrow`**: the arrow's SF Symbol, set as the status button's image
+  and changed without animation (a symbol transition replayed on Space
+  switches).
 
 ## Behavior layers on the core trick
 

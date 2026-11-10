@@ -39,6 +39,7 @@
 - [x] 6.3 Distinguish user-requested from automatic collapses in the engine interface. Undo an automatic collapse that hides a non-allowable control and hold the bar expanded, polling at a low rate so the pending auto-collapse proceeds when the control leaves.
 - [x] 6.4 Let a user-requested collapse stand, mark the hidden controls dismissed, let automatic collapses ignore dismissed controls, and clear the dismissal when the control is observed absent from an unrestricted bar.
 - [x] 6.5 Look for a usable signal for Focus appearing while collapsed (result: only a `log stream` workaround; not adopted, see design).
+- [x] 6.7 Drop the dismissal (supersedes part of 6.4): automatic collapses wait whenever a non-allowable control is shown, also after a manual collapse.
 - [x] 6.6 Replace engine `NSLog` calls with `os.Logger` using public privacy for bundle identifiers, sections, and control identifiers.
 
 ## 7. Remove the always-hidden section (supersedes the earlier always-hidden presentation)
@@ -58,6 +59,7 @@
 
 - [x] 9.1 Draw the arrow as `chevron.left` / `chevron.right` (direction chosen from the layout direction) in an image view hosted in the status button, keeping size, position, right-to-left direction, accessibility label, and press action.
 - [x] 9.2 Switch the glyph with the symbol replace transition on macOS 14 and later and a crossfade on macOS 13 and with Reduce Motion; target the current state so rapid toggles end on the right glyph.
+- [x] 9.4 Drop the arrow animation (supersedes the image view and transition of 9.1–9.2): set the symbol as the button's own image on a 16 × 16 canvas, change it without animation.
 - [x] 9.3 Have the engines report when hiding takes effect and when a collapse is undone; switch the glyph on those reports instead of on the collapse result.
 
 ## 10. Tests
@@ -67,11 +69,13 @@
 - [x] 10.3 Add tests for system-control loss after activation: an automatic collapse is undone and held, a user-requested collapse stands and dismisses, a held collapse proceeds when the control leaves, and a dismissal ends when it leaves.
 - [x] 10.4 Replace the always-hidden presentation tests with tests for reading remembered always-hidden entries as hidden.
 - [x] 10.5 Add tests for the settings menu model: items and checkmarks, choosing a delay turns auto collapse on, Off turns it off, a custom delay is shown.
+- [x] 10.8 Add tests for the arrow: the glyph is the button's template image at the old size, nothing is drawn over the button, an unchanged state leaves the image alone.
+- [x] 10.7 Replace the dismissal tests: a manual collapse during Focus stands, and after the next expand automatic collapses wait again.
 - [x] 10.6 Add engine tests for the hiding-took-effect report: sent on activation, followed by an undo report when an automatic collapse is held after activation, not sent when a collapse is declined before activation.
 
 ## 11. Build, validation, and documentation
 
 - [x] 11.1 Build the direct scheme and run both XCTest targets with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`; lint the string tables.
-- [ ] 11.2 Validate on macOS 27.2: input-source menu survives repeated auto-collapses; with Focus on and the bar expanded, auto-collapse waits; a manual collapse during Focus sticks and auto-collapse then works; after Focus off, auto-collapse resumes; Focus turned on while collapsed shows at the next expand; an app launched while collapsed is visible; the settings menu applies changes at once; the arrow transition looks right in light and dark mode, with Reduce Motion, and when a held collapse is undone. Check Live Activities if one can be produced.
+- [ ] 11.2 Validate on macOS 27.2: input-source menu survives repeated auto-collapses; with Focus on and the bar expanded, auto-collapse waits; a manual collapse during Focus sticks, and after the next expand auto-collapse waits again; after Focus off, auto-collapse resumes; Focus turned on while collapsed shows at the next expand; an app launched while collapsed is visible; the settings menu applies changes at once; the arrow looks right in light and dark mode, keeps its glyph when switching Spaces, and turns back when a held collapse is undone. Check Live Activities if one can be produced.
 - [x] 11.3 Update the manual, runbook, README, and changelog: remove the always-hidden section, preferences window, About, global shortcut, and Notch Overflow; describe the settings menu and the arrow transition; keep the observed-hidden rule and the Focus behavior.
 - [x] 11.4 Produce a runnable build and report its path; replace the installed copy only with the user's confirmation.
