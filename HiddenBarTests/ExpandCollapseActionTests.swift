@@ -24,17 +24,15 @@ final class ExpandCollapseActionTests: XCTestCase {
         XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .rightMouseUp, optionPressed: false), .contextMenu)
     }
 
-    func testOptionLeftTogglesSeparators() {
-        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .leftMouseUp, optionPressed: true), .toggleSeparators)
+    func testOptionLeftTogglesLikeAPlainClick() {
+        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .leftMouseUp, optionPressed: true), .toggle)
     }
 
-    func testOptionRightTogglesSeparators() {
-        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .rightMouseUp, optionPressed: true), .toggleSeparators)
+    func testOptionRightTogglesLikeAPlainClick() {
+        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .rightMouseUp, optionPressed: true), .toggle)
     }
 
-    func testOtherMouseEventTogglesSeparators() {
-        // Preserves the old else-branch: any non-left/right click lands on the
-        // separators toggle.
-        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .otherMouseUp, optionPressed: false), .toggleSeparators)
+    func testOtherMouseEventToggles() {
+        XCTAssertEqual(ExpandCollapseActionResolver.action(eventType: .otherMouseUp, optionPressed: false), .toggle)
     }
 }

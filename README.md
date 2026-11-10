@@ -50,6 +50,7 @@ brew install --cask hiddenbar
 
 * `⌘` + drag to move the Hidden icons around in the menu bar.
 * Click the Arrow icon to hide menu bar items.
+* Right-click the Arrow icon for settings: start at login, auto collapse, and quit.
 
 <p align="center">
 	<img src="img/tutorial.gif">
@@ -57,7 +58,7 @@ brew install --cask hiddenbar
 
 ## 📚 Documentation
 
-- [Manual](docs/MANUAL.md): every setting, the hidden Terminal-only options, and troubleshooting.
+- [Manual](docs/MANUAL.md): every setting, the Terminal-only options, and troubleshooting.
 - [Architecture](docs/ARCHITECTURE.md): how the hiding trick works, topology, and known limits.
 - [Maintainer runbook](docs/RUNBOOK.md): build, behavioral verification, and release process.
 

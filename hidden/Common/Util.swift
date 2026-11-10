@@ -18,10 +18,4 @@ class Util {
         // no helper app, no distributed-notification kill dance.
         return AutoStart.apply(enabled: isAutoStart)
     }
-    
-    static func showPrefWindow() {
-        let prefWindow = PreferencesWindowController.shared.window
-        prefWindow?.bringToFront()
-    }
-   
 }

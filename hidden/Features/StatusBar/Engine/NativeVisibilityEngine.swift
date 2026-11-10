@@ -6,74 +6,100 @@
 //
 
 import AppKit
+import os
 
 // macOS 27 hiding for the direct (non-App Store) build. Instead of inflating the
 // separator, which macOS 27 ejects from the layout once it is too wide (#360),
-// this reads which apps the user placed in each section and asks macOS to show
-// only the allowed ones through the menu-bar visibility restriction behind
-// assessment mode. macOS then hides the rest and reflows the bar itself, so the
-// result does not depend on display width, the notch or the frontmost app's menus.
+// this asks macOS to show only an allow-list of apps through the menu-bar
+// visibility restriction behind assessment mode. macOS then hides the rest and
+// reflows the bar itself, so the result does not depend on display width, the
+// notch or the frontmost app's menus.
 //
 // The arrow is the boundary: apps left of it (LTR) are hidden, apps right of it
-// stay visible. The regular separator is not needed and is taken out of the
-// bar; even at zero width macOS keeps a gap for it. The always-hidden
-// separator, when enabled, marks the third section; it shows while expanded so
-// it can be ⌘-dragged, and drops to zero width while collapsed, where macOS
-// has already removed everything it would separate. It keeps its slot because
-// its position is what defines that section.
+// stay visible. The separator is not needed and is taken out of the bar; even
+// at zero width macOS keeps a gap for it.
+//
+// Only what was observed in a hidden section is hidden. The allow-list is every
+// running app minus the bundles last seen on the hidden side, so a snapshot that
+// misses an item (common on macOS 27.2) leaves it visible rather than hiding it.
+// Sections are remembered across collapses and launches, and read only while
+// nothing is hidden, because hidden items report stale positions.
 //
 // Limits, all from what macOS 27 exposes:
 // - Hiding is per app: an app with several icons hides or shows them together
 //   (the most visible section wins).
-// - macOS's own items (clock, Wi-Fi, Control Center...) are always kept visible:
-//   Accessibility cannot tell them apart, so they cannot be mapped to sections.
-// - Sections are read only while nothing is hidden, because hidden items report
-//   stale positions. They are re-read on the next collapse from an unrestricted
-//   bar, so an app launched while collapsed stays hidden until then, the same
-//   as a new icon landing in the hidden section under the old mechanism.
+// - macOS's own items (clock, Wi-Fi, Control Center...) are always allowed. A few
+//   (Focus) cannot be allowed by any identifier; the engine notices when one
+//   disappears after an activation, and automatic collapses wait while it is on
+//   screen. A collapse by click still hides it.
+// - A Focus that turns on while collapsed is not shown until the next expand.
 final class NativeVisibilityEngine: MenuBarEngine {
-    // System item identifiers to keep visible. Unknown identifiers are ignored,
-    // so the range covers items a given Mac does not have (0-63 checked on 27.0).
-    static let systemItemsToKeep = Array(0..<64)
-
     private weak var items: MenuBarItemProvider?
     private let inventory: MenuBarInventoryProviding
     private let visibility: NativeVisibilityProviding
+    private let memory: MenuBarSectionMemory
     private let ownBundleIdentifier: String?
+    private let runningBundles: () -> [String]
     private let itemFrame: (NSStatusItem) -> CGRect?
     private let isLTR: () -> Bool
-
-    private let expandedLength: CGFloat = 20
+    private let verificationDelay: TimeInterval
+    private let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.dwarvesv.minimalbar", category: "visibility")
 
     // .calibrating stands for "an activation is in flight".
     private(set) var state: MenuBarEngineState = .expanded
     private(set) var layout: MenuBarLayout?
 
+    var onHidingChange: ((Bool) -> Void)?
+
     private var assertion: NativeVisibilityAssertion?
+    // The bundles the held restriction allows.
+    private var allowedBundles: [String] = []
     // Bumped whenever a pending activation must no longer win (an expand, a newer
     // activation); a late success is then invalidated straight away.
     private var generation = 0
     private var lastUnavailableReason: String?
 
-    private var alwaysHiddenEnabled = false
-    private var alwaysHiddenSeparatorHidden = false
+    // System controls that disappeared after an activation, so no allow-list can
+    // keep them. Learned at runtime: the identifier set can change in a point release.
+    private var nonAllowableControls: Set<String> = []
+
+    private var launchObserver: NSObjectProtocol?
+    private let workspaceNotifications: NotificationCenter
 
     init(items: MenuBarItemProvider,
          inventory: MenuBarInventoryProviding = AccessibilityMenuBarInventory(),
          visibility: NativeVisibilityProviding = NativeVisibilityBridge(),
+         memory: MenuBarSectionMemory = MenuBarSectionMemory(),
          ownBundleIdentifier: String? = Bundle.main.bundleIdentifier,
+         runningBundles: @escaping () -> [String] = { NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier) },
+         workspaceNotifications: NotificationCenter = NSWorkspace.shared.notificationCenter,
+         verificationDelay: TimeInterval = 0.3,
          itemFrame: @escaping (NSStatusItem) -> CGRect? = { $0.button?.window?.frame },
          isLTR: @escaping () -> Bool = { Constant.isUsingLTRLanguage }) {
         self.items = items
         self.inventory = inventory
         self.visibility = visibility
+        self.memory = memory
         self.ownBundleIdentifier = ownBundleIdentifier
+        self.runningBundles = runningBundles
+        self.workspaceNotifications = workspaceNotifications
+        self.verificationDelay = verificationDelay
         self.itemFrame = itemFrame
         self.isLTR = isLTR
         items.separatorItem.isVisible = false
+        launchObserver = workspaceNotifications.addObserver(forName: NSWorkspace.didLaunchApplicationNotification,
+                                                            object: nil, queue: .main) { [weak self] _ in
+            self?.applicationDidLaunch()
+        }
     }
 
-    func collapse(completion: @escaping (CollapseResult) -> Void) {
+    deinit {
+        if let launchObserver = launchObserver {
+            workspaceNotifications.removeObserver(launchObserver)
+        }
+    }
+
+    func collapse(origin: CollapseOrigin, completion: @escaping (CollapseResult) -> Void) {
         switch state {
         case .collapsed:
             return completion(.collapsed)
@@ -83,7 +109,6 @@ final class NativeVisibilityEngine: MenuBarEngine {
         case .expanded, .unavailable:
             break
         }
-        setSeparatorsVisible(true)
 
         guard visibility.isAvailable else {
             logUnavailableOnce("the native menu-bar visibility API is not available in this build or on this macOS")
@@ -99,75 +124,104 @@ final class NativeVisibilityEngine: MenuBarEngine {
             return completion(.unavailable)
         }
         state = .calibrating
-        withLayout { [weak self] layout in
+        generation += 1
+        let generation = self.generation
+        // The system controls come first: they are one cheap read, and a collapse
+        // that has to wait for one of them then costs no walk over every app.
+        inventory.systemControls { [weak self] before in
+            guard let self = self, generation == self.generation else { return }
+            let blocking = (before ?? []).intersection(self.nonAllowableControls)
+            if origin == .automatic, !blocking.isEmpty {
+                return self.hold(blocking, completion: completion)
+            }
+            self.refreshSections { [weak self] refreshed in
+                guard let self = self else { return }
+                guard refreshed else {
+                    self.logUnavailableOnce("the arrow's position cannot be read yet")
+                    self.state = .expanded
+                    return completion(.unavailable)
+                }
+                self.collapse(origin: origin, controlsBefore: before, completion: completion)
+            }
+        }
+    }
+
+    private func collapse(origin: CollapseOrigin, controlsBefore before: Set<String>?, completion: @escaping (CollapseResult) -> Void) {
+        activate { [weak self] succeeded in
             guard let self = self else { return }
-            guard let layout = layout else {
-                self.logUnavailableOnce("the arrow's position cannot be read yet")
+            guard succeeded else {
                 self.state = .expanded
                 return completion(.unavailable)
             }
-            self.activate(allowing: layout.bundles(in: [.visible])) { [weak self] succeeded in
+            // The icons are gone now; the check below takes a moment more.
+            self.onHidingChange?(true)
+            self.verifySystemControls(before: before) { [weak self] lost in
                 guard let self = self else { return }
-                self.state = succeeded ? .collapsed : .expanded
-                if succeeded {
-                    self.setSeparatorsVisible(false)
+                if !lost.isEmpty {
+                    self.nonAllowableControls.formUnion(lost)
+                    if origin == .automatic {
+                        self.releaseAssertion()
+                        self.onHidingChange?(false)
+                        return self.hold(lost, completion: completion)
+                    }
+                    self.log.info("collapse by request hides system controls \(lost.sorted().joined(separator: ","), privacy: .public)")
                 }
-                completion(succeeded ? .collapsed : .unavailable)
+                self.state = .collapsed
+                completion(.collapsed)
             }
+        }
+    }
+
+    // An automatic collapse that would hide a system control the user is looking
+    // at leaves the bar expanded; the caller tries again later.
+    private func hold(_ controls: Set<String>, completion: (CollapseResult) -> Void) {
+        log.info("collapse held: would hide system controls \(controls.sorted().joined(separator: ","), privacy: .public)")
+        state = .expanded
+        completion(.held)
+    }
+
+    // Compares the controls on screen before and after an activation; the ones
+    // that vanished are what the restriction hides although it should not.
+    private func verifySystemControls(before: Set<String>?, completion: @escaping (Set<String>) -> Void) {
+        guard let before = before else { return completion([]) }
+        let generation = self.generation
+        let read = { [weak self] in
+            guard let self = self, generation == self.generation else { return }
+            self.inventory.systemControls { [weak self] after in
+                guard let self = self, generation == self.generation else { return }
+                completion(after.map { before.subtracting($0) } ?? [])
+            }
+        }
+        if verificationDelay > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + verificationDelay, execute: read)
+        } else {
+            read()
         }
     }
 
     func expand() {
-        setSeparatorsVisible(true)
         state = .expanded
-        applyExpandedPresentation()
-    }
-
-    func updateAlwaysHiddenSection(enabled: Bool, separatorHidden: Bool) {
-        alwaysHiddenEnabled = enabled
-        alwaysHiddenSeparatorHidden = separatorHidden
-        if state != .collapsed {
-            setSeparatorsVisible(true)
-        }
-        if state == .expanded {
-            applyExpandedPresentation()
-        }
+        releaseAssertion()
     }
 
     // Native hiding does not depend on display geometry, so only drop the cached
-    // sections; the next read from an unrestricted bar replaces them.
+    // layout; the next read from an unrestricted bar replaces it.
     func invalidateLayout() {
         if assertion == nil {
             layout = nil
         }
     }
 
-    // Expanded shows the hidden section; the always-hidden section stays hidden
-    // while "hide separators" is on, otherwise everything is revealed by dropping
-    // the restriction altogether.
-    private func applyExpandedPresentation() {
-        guard alwaysHiddenEnabled && alwaysHiddenSeparatorHidden, visibility.isAvailable, inventory.isAuthorized else {
-            return releaseAssertion()
-        }
-        withLayout { [weak self] layout in
-            guard let self = self else { return }
-            guard let layout = layout else {
-                return self.releaseAssertion()
-            }
-            self.activate(allowing: layout.bundles(in: [.visible, .hidden])) { _ in }
-        }
-    }
-
-    // The sections as the user arranged them. Read fresh only from an
-    // unrestricted bar; while a restriction is active the cached ones stand in.
-    // Superseded by any later expand or activation, like an activation is.
-    private func withLayout(_ body: @escaping (MenuBarLayout?) -> Void) {
+    // Brings the remembered sections up to date. A fresh read happens only from an
+    // unrestricted bar; while a restriction is active the memory stands in. Then
+    // the body runs with false if the arrow cannot be located. Superseded by any
+    // later expand or activation, like an activation is.
+    private func refreshSections(_ body: @escaping (Bool) -> Void) {
         if assertion != nil {
-            return body(layout)
+            return body(true)
         }
         guard let arrow = items?.toggleItem,
-              let boundary = itemFrame(arrow) else { return body(nil) }
-        let alwaysHiddenFrame = alwaysHiddenEnabled ? items?.alwaysHiddenItem.flatMap(itemFrame) : nil
+              let boundary = itemFrame(arrow) else { return body(false) }
         let isLTR = self.isLTR()
         generation += 1
         let generation = self.generation
@@ -175,22 +229,41 @@ final class NativeVisibilityEngine: MenuBarEngine {
             guard let self = self, generation == self.generation else { return }
             let layout = MenuBarLayoutResolver.resolve(inventory: inventory,
                                                        separatorFrame: boundary,
-                                                       alwaysHiddenSeparatorFrame: alwaysHiddenFrame,
                                                        isLTR: isLTR,
                                                        excludingBundle: self.ownBundleIdentifier)
-            NSLog("NativeVisibility: arrow at x=\(boundary.midX); visible \(layout.bundles(in: [.visible])), hidden \(layout.bundles(in: [.hidden])), always hidden \(layout.bundles(in: [.alwaysHidden]))")
+            self.memory.update(with: layout.sections)
             self.layout = layout
-            body(layout)
+            self.logLayout(layout)
+            body(true)
         }
     }
 
-    // Activates the new restriction before dropping the old one, so switching
-    // between collapsed and expanded never flashes the whole bar visible.
-    private func activate(allowing bundles: [String], completion: @escaping (Bool) -> Void) {
+    // Everything running except what was last seen on the hidden side.
+    private func allowedBundleIdentifiers() -> [String] {
+        var allowed = Set(runningBundles())
+        allowed.formUnion(memory.bundles(in: [.visible]))
+        allowed.subtract(memory.bundles(in: [.hidden]))
+        if let own = ownBundleIdentifier {
+            allowed.insert(own)
+        }
+        return allowed.sorted()
+    }
+
+    // Activates the new restriction before dropping the old one, so replacing it
+    // never flashes the whole bar visible.
+    private func activate(releasingOnFailure: Bool = true,
+                          completion: @escaping (Bool) -> Void) {
+        guard let systemItems = visibility.supportedSystemItems(), !systemItems.isEmpty else {
+            logUnavailableOnce("the supported system menu-bar controls could not be determined")
+            if releasingOnFailure {
+                releaseAssertion()
+            }
+            return completion(false)
+        }
         generation += 1
         let generation = self.generation
-        let allowed = (ownBundleIdentifier.map { [$0] } ?? []) + bundles
-        visibility.activate(allowedSystemItems: Self.systemItemsToKeep,
+        let allowed = allowedBundleIdentifiers()
+        visibility.activate(allowedSystemItems: systemItems,
                             allowedBundleIdentifiers: allowed) { [weak self] result in
             guard let self = self, generation == self.generation else {
                 if case .success(let stale) = result { stale.invalidate() }
@@ -200,22 +273,28 @@ final class NativeVisibilityEngine: MenuBarEngine {
             case .success(let newAssertion):
                 let old = self.assertion
                 self.assertion = newAssertion
+                self.allowedBundles = allowed
                 old?.invalidate()
+                self.log.info("restriction active, hiding \(self.memory.bundles(in: [.hidden]).joined(separator: ","), privacy: .public)")
                 completion(true)
             case .failure(let error):
                 // Fail open: never leave icons hidden after an error.
-                NSLog("NativeVisibility: activation failed: \(error.localizedDescription)")
-                self.releaseAssertion()
+                self.log.error("activation failed: \(error.localizedDescription, privacy: .public)")
+                if releasingOnFailure {
+                    self.releaseAssertion()
+                }
                 completion(false)
             }
         }
     }
 
-    // The always-hidden separator goes to zero width rather than isVisible =
-    // false, which would make macOS forget where the user placed it.
-    private func setSeparatorsVisible(_ visible: Bool) {
-        items?.separatorItem.isVisible = false
-        items?.alwaysHiddenItem?.length = visible && alwaysHiddenEnabled ? expandedLength : 0
+    // An app launched while a restriction is active has no item on the allow-list
+    // yet, so it would be hidden. Recompute the list; an app known to be hidden
+    // is not on it and stays hidden.
+    private func applicationDidLaunch() {
+        guard assertion != nil, state == .collapsed else { return }
+        guard allowedBundleIdentifiers() != allowedBundles else { return }
+        activate(releasingOnFailure: false) { _ in }
     }
 
     // Any arrangement works: whatever sits left of the arrow is the hidden section.
@@ -223,20 +302,25 @@ final class NativeVisibilityEngine: MenuBarEngine {
         return true
     }
 
-    var isAlwaysHiddenSeparatorPlaced: Bool {
-        return MenuBarOrder.isItem(items?.alwaysHiddenItem, onHiddenSideOf: items?.toggleItem)
-    }
-
     private func releaseAssertion() {
         generation += 1
         assertion?.invalidate()
         assertion = nil
+        allowedBundles = []
     }
 
     // Logged when the reason changes, so a retried collapse does not spam.
     private func logUnavailableOnce(_ reason: String) {
         guard reason != lastUnavailableReason else { return }
         lastUnavailableReason = reason
-        NSLog("NativeVisibility: hiding unavailable: \(reason)")
+        log.error("hiding unavailable: \(reason, privacy: .public)")
+    }
+
+    private func logLayout(_ layout: MenuBarLayout) {
+        log.info("sections read: visible \(layout.bundles(in: [.visible]).joined(separator: ","), privacy: .public); hidden \(layout.bundles(in: [.hidden]).joined(separator: ","), privacy: .public)")
+        if layout.hasUnclassifiableVisibleItems {
+            let details = layout.unclassifiableVisibleItems.map(\.diagnosticDescription).joined(separator: "; ")
+            log.info("visible extras without a bundle identifier are not managed: \(details, privacy: .public)")
+        }
     }
 }

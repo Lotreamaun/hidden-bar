@@ -15,6 +15,7 @@ protocol NativeVisibilityAssertion: AnyObject {
 
 protocol NativeVisibilityProviding: AnyObject {
     var isAvailable: Bool { get }
+    func supportedSystemItems() -> [Int]?
 
     // Keeps only these system items and apps visible. The completion runs on the
     // main queue.
@@ -26,6 +27,20 @@ protocol NativeVisibilityProviding: AnyObject {
 final class NativeVisibilityBridge: NativeVisibilityProviding {
     var isAvailable: Bool {
         return HBNativeVisibilityIsAvailable()
+    }
+
+    // Read once: the list cannot change while the process runs, and reading it
+    // loads the framework and walks a Swift array.
+    private var cachedSystemItems: [Int]?
+
+    func supportedSystemItems() -> [Int]? {
+        if let cached = cachedSystemItems {
+            return cached
+        }
+        guard let items = HBNativeVisibilitySupportedSystemItems()?.map(\.intValue),
+              !items.isEmpty else { return nil }
+        cachedSystemItems = items
+        return items
     }
 
     func activate(allowedSystemItems: [Int],

@@ -6,24 +6,11 @@
   Copyright © 2020 Dwarves Foundation. All rights reserved.
 */
 
-"Preferences..." = "Preferences...";
-"Toggle Auto Collapse" = "Toggle Auto Collapse";
-"Enable Auto Collapse" = "Enable Auto Collapse";
-"Disable Auto Collapse" = "Disable Auto Collapse";
-"Quit" = "Quit";
-"Set Shortcut" = "Set Shortcut";
-"Show Notch Items" = "Show Notch Items";
-"Notch Overflow" = "Notch Overflow";
-"Hidden Behind Notch (%d)" = "Hidden Behind Notch (%d)";
-"Visible (%d)" = "Visible (%d)";
-"No items found (grant Accessibility permission)" = "No items found (grant Accessibility permission)";
-"Enable Notch Overflow (right-click ‹ to access hidden icons)" = "Enable Notch Overflow (right-click ‹ to access hidden icons)";
-"Tutorial text" = "
-Use the always hidden feature to keep your icons tidy. Here's how to set it
-Steps to enable:
-1. Enable the always hidden “|” (translucent color bar)
-2. Hold  ⌘ and drag it on the left-hand side of the normal bar, then move any icons you want to disappear on the left of that bar.
-3. Finally, please right-click on the collapse “<” icon to make it disappear.
-Steps to view always hidden icons:
-1. You right-click on “<” icon again to view and repeat the action to enable the feature. Enjoy 😉!
-";
+"Start at Login" = "Start at Login";
+"Auto Collapse" = "Auto Collapse";
+"Off" = "Off";
+"%ld seconds" = "%ld seconds";
+"1 minute" = "1 minute";
+"Quit Hidden Bar" = "Quit Hidden Bar";
+"Could not update the login item" = "Could not update the login item";
+"Check System Settings > General > Login Items and make sure Hidden Bar is allowed." = "Check System Settings > General > Login Items and make sure Hidden Bar is allowed.";

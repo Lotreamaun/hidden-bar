@@ -7,34 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00117C4426600671005E517C /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00117C4326600671005E517C /* Assets.swift */; };
+		1DA8E8907326D6D7E2118DF8 /* StatusBarArrowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E67C1C72C9A2CB20EA7A0C7 /* StatusBarArrowTests.swift */; };
+		343C0480079F923F01B754C4 /* SettingsMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8BA2015E29A6584819AC59 /* SettingsMenuTests.swift */; };
+		A2125417AB613975AF9B736F /* SettingsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2B2560750FE0E0DE731A9F /* SettingsMenu.swift */; };
+		0016B44910606FA9E628BE3D /* StatusBarArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B22B75912F8E19027C0D5E0 /* StatusBarArrow.swift */; };
 		00137CDF24A63DB1004AC855 /* Notification.Name+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00137CDE24A63DB1004AC855 /* Notification.Name+Extension.swift */; };
-		0842CDFB23A9FDD000D14BD4 /* GlobalKeybindingPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0842CDFA23A9FDD000D14BD4 /* GlobalKeybindingPreferences.swift */; };
-		08A5F85A23AA007A00981CA5 /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A5F85923AA007A00981CA5 /* PreferencesViewController.swift */; };
-		08A5F85C23AA013100981CA5 /* SelectedSecond.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A5F85B23AA013100981CA5 /* SelectedSecond.swift */; };
-		08A5F85F23AA01EE00981CA5 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 08A5F85E23AA01EE00981CA5 /* HotKey */; };
 		08A5F86123AA085B00981CA5 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A5F86023AA085B00981CA5 /* Preferences.swift */; };
 		08A5F86423AA09F300981CA5 /* UserDefault+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A5F86323AA09F300981CA5 /* UserDefault+Extension.swift */; };
-		08B9F32C2411883300AA0551 /* NSWindow+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08B9F32B2411883300AA0551 /* NSWindow+Extension.swift */; };
-		08C20FDE23AABDD10035D978 /* HyperlinkTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C20FDD23AABDD10035D978 /* HyperlinkTextField.swift */; };
-		08C20FE023AB44E60035D978 /* Bundle+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C20FDF23AB44E60035D978 /* Bundle+Extension.swift */; };
-		08C20FE223AB452C0035D978 /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C20FE123AB452C0035D978 /* AboutViewController.swift */; };
-		0C57EC38D13980EBF7C9BBDA /* NotchOverflowMenuBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BF69BE15B7DE0272612470 /* NotchOverflowMenuBuilderTests.swift */; };
-		1A6C9D316FF97AF473765572 /* NotchGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B44EDBC1C09AEF89C472D74 /* NotchGeometryTests.swift */; };
-		3CF14C82221FA49D0083D42B /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF14C81221FA49D0083D42B /* PreferencesWindowController.swift */; };
-		4D8C4B09D62D4884B34E1A14 /* NotchOverflowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE73DB4E0664488997EEB6DE /* NotchOverflowController.swift */; };
-		55F3F1192608923B0054B881 /* Date+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F3F1182608923B0054B881 /* Date+Extension.swift */; };
-		55F3F11D2608925A0054B881 /* StackView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F3F11C2608925A0054B881 /* StackView+Extension.swift */; };
-		70F996B8AD634F42175AE89C /* NotchOverflowPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06495EE4F823D325A44A357C /* NotchOverflowPreferencesTests.swift */; };
-		8557996B406181A91CBF5917 /* MenuBarExtraClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B6D80CB37CBB7622AC8455D /* MenuBarExtraClassifierTests.swift */; };
 		929113F521F9D04100173149 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 929113F421F9D04100173149 /* AppDelegate.swift */; };
 		929113F921F9D04200173149 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 929113F821F9D04200173149 /* Assets.xcassets */; };
 		929113FC21F9D04200173149 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 929113FA21F9D04200173149 /* Main.storyboard */; };
 		92C5057F21FEC24C0084719A /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C5057E21FEC24C0084719A /* ServiceManagement.framework */; };
 		92C5058121FEC2590084719A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C5058021FEC2590084719A /* Cocoa.framework */; };
 		92C97B88220032ED0007559C /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C97B87220032ED0007559C /* Util.swift */; };
-		92C97B8B220049D20007559C /* NSBarButtonItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C97B8A220049D10007559C /* NSBarButtonItem+Extension.swift */; };
-		92C97B8D220058740007559C /* NSView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C97B8C220058740007559C /* NSView+Extension.swift */; };
 		92C97B8F220147FE0007559C /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C97B8E220147FE0007559C /* Constant.swift */; };
 		92C97B9122018C1F0007559C /* StatusBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C97B9022018C1F0007559C /* StatusBarController.swift */; };
 		967F4B2524169BC800F18D3C /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967F4B2424169BC800F18D3C /* String+Extension.swift */; };
@@ -76,19 +61,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00117C4326600671005E517C /* Assets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
+		2E67C1C72C9A2CB20EA7A0C7 /* StatusBarArrowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarArrowTests.swift; sourceTree = "<group>"; };
+		3F8BA2015E29A6584819AC59 /* SettingsMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuTests.swift; sourceTree = "<group>"; };
+		8A2B2560750FE0E0DE731A9F /* SettingsMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenu.swift; sourceTree = "<group>"; };
+		1B22B75912F8E19027C0D5E0 /* StatusBarArrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarArrow.swift; sourceTree = "<group>"; };
 		00137CDE24A63DB1004AC855 /* Notification.Name+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification.Name+Extension.swift"; sourceTree = "<group>"; };
-		06495EE4F823D325A44A357C /* NotchOverflowPreferencesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchOverflowPreferencesTests.swift; sourceTree = "<group>"; };
-		0842CDFA23A9FDD000D14BD4 /* GlobalKeybindingPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalKeybindingPreferences.swift; sourceTree = "<group>"; };
-		08A5F85923AA007A00981CA5 /* PreferencesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
-		08A5F85B23AA013100981CA5 /* SelectedSecond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedSecond.swift; sourceTree = "<group>"; };
 		08A5F86023AA085B00981CA5 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		08A5F86323AA09F300981CA5 /* UserDefault+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefault+Extension.swift"; sourceTree = "<group>"; };
-		08B9F32B2411883300AA0551 /* NSWindow+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSWindow+Extension.swift"; sourceTree = "<group>"; };
-		08C20FDD23AABDD10035D978 /* HyperlinkTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperlinkTextField.swift; sourceTree = "<group>"; };
-		08C20FDF23AB44E60035D978 /* Bundle+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+Extension.swift"; sourceTree = "<group>"; };
-		08C20FE123AB452C0035D978 /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
-		3CF14C81221FA49D0083D42B /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		55188DF7279A737800A92772 /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Main.strings; sourceTree = "<group>"; };
 		55188DF9279A737900A92772 /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9895DA1CEEF24C1995B23772 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Main.strings; sourceTree = "<group>"; };
@@ -99,9 +78,6 @@
 		55D9B6BA2661DEDA007AF073 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		55D9B6BB2661DEE7007AF073 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		55D9B6BD2661DEE8007AF073 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		55F3F1182608923B0054B881 /* Date+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
-		55F3F11C2608925A0054B881 /* StackView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StackView+Extension.swift"; sourceTree = "<group>"; };
-		6B6D80CB37CBB7622AC8455D /* MenuBarExtraClassifierTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MenuBarExtraClassifierTests.swift; sourceTree = "<group>"; };
 		6F2F828CAAE82A4D34BDDCBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		9220587D22127050008A8B03 /* Hidden.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Hidden.entitlements; path = Hidden/Hidden.entitlements; sourceTree = "<group>"; };
 		929113F121F9D04100173149 /* Hidden Bar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hidden Bar.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,22 +88,17 @@
 		92C5057E21FEC24C0084719A /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		92C5058021FEC2590084719A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		92C97B87220032ED0007559C /* Util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
-		92C97B8A220049D10007559C /* NSBarButtonItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSBarButtonItem+Extension.swift"; sourceTree = "<group>"; };
-		92C97B8C220058740007559C /* NSView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSView+Extension.swift"; sourceTree = "<group>"; };
 		92C97B8E220147FE0007559C /* Constant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
 		92C97B9022018C1F0007559C /* StatusBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarController.swift; sourceTree = "<group>"; };
 		967F4B2424169BC800F18D3C /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		967F4B2924169CAF00F18D3C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		967F4B2B24169CB200F18D3C /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		967F4B2C24169CB400F18D3C /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		9B44EDBC1C09AEF89C472D74 /* NotchGeometryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NotchGeometryTests.swift; path = NotchGeometryTests.swift; sourceTree = "<group>"; };
 		9C7BF2ECD52E3E5C0D8D7556 /* HiddenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HiddenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1326443261D7E0200319D35 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Main.strings; sourceTree = "<group>"; };
 		B1326445261D7E0200319D35 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B350A2CC23AAFB47003A04AC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		B8404C9A24041A4300E6DBF8 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Main.strings; sourceTree = "<group>"; };
-		BE73DB4E0664488997EEB6DE /* NotchOverflowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchOverflowController.swift; sourceTree = "<group>"; };
-		E3BF69BE15B7DE0272612470 /* NotchOverflowMenuBuilderTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotchOverflowMenuBuilderTests.swift; sourceTree = "<group>"; };
 		FF57A44B25E6C50200988FC2 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FF8A0FB5265E10DB00C76226 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Main.strings"; sourceTree = "<group>"; };
 		8DDBB306F3907BFB2D9E6DCF /* MenuBarEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarEngine.swift; sourceTree = "<group>"; };
@@ -162,7 +133,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				08A5F85F23AA01EE00981CA5 /* HotKey in Frameworks */,
 				92C5058121FEC2590084719A /* Cocoa.framework in Frameworks */,
 				92C5057F21FEC24C0084719A /* ServiceManagement.framework in Frameworks */,
 			);
@@ -178,21 +148,9 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0842CDF923A9FDB900D14BD4 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				0842CDFA23A9FDD000D14BD4 /* GlobalKeybindingPreferences.swift */,
-				08A5F85B23AA013100981CA5 /* SelectedSecond.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
 		0842CDFC23A9FF6D00D14BD4 /* Features */ = {
 			isa = PBXGroup;
 			children = (
-				08C20FDC23AABC440035D978 /* About */,
-				905962CD99D24D0C893AFFA7 /* NotchOverflow */,
-				0842CDFE23A9FF7C00D14BD4 /* Preferences */,
 				0842CDFD23A9FF7500D14BD4 /* StatusBar */,
 			);
 			path = Features;
@@ -201,6 +159,8 @@
 		0842CDFD23A9FF7500D14BD4 /* StatusBar */ = {
 			isa = PBXGroup;
 			children = (
+				8A2B2560750FE0E0DE731A9F /* SettingsMenu.swift */,
+				1B22B75912F8E19027C0D5E0 /* StatusBarArrow.swift */,
 				A56D368B6ABF45B5283FE4FA /* Layout */,
 				DC851BF8D5E527666907BC71 /* Engine */,
 				92C97B9022018C1F0007559C /* StatusBarController.swift */,
@@ -221,44 +181,21 @@
 			path = Engine;
 			sourceTree = "<group>";
 		};
-		0842CDFE23A9FF7C00D14BD4 /* Preferences */ = {
-			isa = PBXGroup;
-			children = (
-				08A5F85923AA007A00981CA5 /* PreferencesViewController.swift */,
-				3CF14C81221FA49D0083D42B /* PreferencesWindowController.swift */,
-			);
-			path = Preferences;
-			sourceTree = "<group>";
-		};
 		08A5F86223AA09D900981CA5 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
 				08A5F86323AA09F300981CA5 /* UserDefault+Extension.swift */,
-				08C20FDF23AB44E60035D978 /* Bundle+Extension.swift */,
-				08B9F32B2411883300AA0551 /* NSWindow+Extension.swift */,
 				967F4B2424169BC800F18D3C /* String+Extension.swift */,
 				00137CDE24A63DB1004AC855 /* Notification.Name+Extension.swift */,
-				55F3F1182608923B0054B881 /* Date+Extension.swift */,
-				55F3F11C2608925A0054B881 /* StackView+Extension.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		08C20FDC23AABC440035D978 /* About */ = {
-			isa = PBXGroup;
-			children = (
-				08C20FE123AB452C0035D978 /* AboutViewController.swift */,
-			);
-			path = About;
 			sourceTree = "<group>";
 		};
 		82028E09AB3D6FF759D8044C /* HiddenTests */ = {
 			isa = PBXGroup;
 			children = (
-				9B44EDBC1C09AEF89C472D74 /* NotchGeometryTests.swift */,
-				6B6D80CB37CBB7622AC8455D /* MenuBarExtraClassifierTests.swift */,
-				E3BF69BE15B7DE0272612470 /* NotchOverflowMenuBuilderTests.swift */,
-				06495EE4F823D325A44A357C /* NotchOverflowPreferencesTests.swift */,
+				2E67C1C72C9A2CB20EA7A0C7 /* StatusBarArrowTests.swift */,
+				3F8BA2015E29A6584819AC59 /* SettingsMenuTests.swift */,
 			);
 			name = HiddenTests;
 			path = HiddenTests;
@@ -272,19 +209,10 @@
 			name = "OS X";
 			sourceTree = "<group>";
 		};
-		905962CD99D24D0C893AFFA7 /* NotchOverflow */ = {
-			isa = PBXGroup;
-			children = (
-				BE73DB4E0664488997EEB6DE /* NotchOverflowController.swift */,
-			);
-			path = NotchOverflow;
-			sourceTree = "<group>";
-		};
 		9267D3212201A49200EFFCE2 /* Common */ = {
 			isa = PBXGroup;
 			children = (
 				92C97B87220032ED0007559C /* Util.swift */,
-				00117C4326600671005E517C /* Assets.swift */,
 				92C97B8E220147FE0007559C /* Constant.swift */,
 				08A5F86023AA085B00981CA5 /* Preferences.swift */,
 				9A329E615845473D946DA3C2 /* AutoStart.swift */,
@@ -321,9 +249,7 @@
 				C26FA55CE7C1DDA6A96F4B92 /* Hidden-Bridging-Header.h */,
 				08A5F86223AA09D900981CA5 /* Extensions */,
 				0842CDFC23A9FF6D00D14BD4 /* Features */,
-				0842CDF923A9FDB900D14BD4 /* Models */,
 				9267D3212201A49200EFFCE2 /* Common */,
-				92C97B89220049B30007559C /* Views */,
 				929113F421F9D04100173149 /* AppDelegate.swift */,
 				929113F821F9D04200173149 /* Assets.xcassets */,
 				929113FA21F9D04200173149 /* Main.storyboard */,
@@ -341,16 +267,6 @@
 				8E00063F190C5A30FD3DA5BA /* OS X */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		92C97B89220049B30007559C /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				92C97B8A220049D10007559C /* NSBarButtonItem+Extension.swift */,
-				92C97B8C220058740007559C /* NSView+Extension.swift */,
-				08C20FDD23AABDD10035D978 /* HyperlinkTextField.swift */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		A56D368B6ABF45B5283FE4FA /* Layout */ = {
@@ -399,7 +315,6 @@
 			);
 			name = "Hidden Bar";
 			packageProductDependencies = (
-				08A5F85E23AA01EE00981CA5 /* HotKey */,
 			);
 			productName = vanillaClone;
 			productReference = 929113F121F9D04100173149 /* Hidden Bar.app */;
@@ -482,7 +397,6 @@
 			);
 			mainGroup = 929113E821F9D04100173149;
 			packageReferences = (
-				08A5F85D23AA01EE00981CA5 /* XCRemoteSwiftPackageReference "HotKey" */,
 			);
 			productRefGroup = 929113F221F9D04100173149 /* Products */;
 			projectDirPath = "";
@@ -520,10 +434,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A6C9D316FF97AF473765572 /* NotchGeometryTests.swift in Sources */,
-				8557996B406181A91CBF5917 /* MenuBarExtraClassifierTests.swift in Sources */,
-				0C57EC38D13980EBF7C9BBDA /* NotchOverflowMenuBuilderTests.swift in Sources */,
-				70F996B8AD634F42175AE89C /* NotchOverflowPreferencesTests.swift in Sources */,
+				1DA8E8907326D6D7E2118DF8 /* StatusBarArrowTests.swift in Sources */,
+				343C0480079F923F01B754C4 /* SettingsMenuTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,9 +443,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2125417AB613975AF9B736F /* SettingsMenu.swift in Sources */,
+				0016B44910606FA9E628BE3D /* StatusBarArrow.swift in Sources */,
 				92C97B8F220147FE0007559C /* Constant.swift in Sources */,
-				08C20FE023AB44E60035D978 /* Bundle+Extension.swift in Sources */,
-				08A5F85C23AA013100981CA5 /* SelectedSecond.swift in Sources */,
 				08A5F86123AA085B00981CA5 /* Preferences.swift in Sources */,
 				92C97B9122018C1F0007559C /* StatusBarController.swift in Sources */,
 				62C8B44F0D264D96B75FF0FC /* ExpandCollapseAction.swift in Sources */,
@@ -545,24 +457,12 @@
 				B0934CB18EB875D05B3EF781 /* MenuBarEngine.swift in Sources */,
 				800F5C1749A0BF5F18E5CB1E /* MenuBarEngineFactory.swift in Sources */,
 				7B3502A74602F87B6207E929 /* LegacyLengthEngine.swift in Sources */,
-				55F3F1192608923B0054B881 /* Date+Extension.swift in Sources */,
-				08B9F32C2411883300AA0551 /* NSWindow+Extension.swift in Sources */,
 				929113F521F9D04100173149 /* AppDelegate.swift in Sources */,
-				08C20FDE23AABDD10035D978 /* HyperlinkTextField.swift in Sources */,
 				92C97B88220032ED0007559C /* Util.swift in Sources */,
 				83E0D6A1FA184019932AECA5 /* AutoStart.swift in Sources */,
 				967F4B2524169BC800F18D3C /* String+Extension.swift in Sources */,
-				00117C4426600671005E517C /* Assets.swift in Sources */,
-				08A5F85A23AA007A00981CA5 /* PreferencesViewController.swift in Sources */,
-				3CF14C82221FA49D0083D42B /* PreferencesWindowController.swift in Sources */,
-				92C97B8B220049D20007559C /* NSBarButtonItem+Extension.swift in Sources */,
-				92C97B8D220058740007559C /* NSView+Extension.swift in Sources */,
-				0842CDFB23A9FDD000D14BD4 /* GlobalKeybindingPreferences.swift in Sources */,
-				55F3F11D2608925A0054B881 /* StackView+Extension.swift in Sources */,
-				08C20FE223AB452C0035D978 /* AboutViewController.swift in Sources */,
 				00137CDF24A63DB1004AC855 /* Notification.Name+Extension.swift in Sources */,
 				08A5F86423AA09F300981CA5 /* UserDefault+Extension.swift in Sources */,
-				4D8C4B09D62D4884B34E1A14 /* NotchOverflowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1172,24 +1072,7 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		08A5F85D23AA01EE00981CA5 /* XCRemoteSwiftPackageReference "HotKey" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/soffes/HotKey/";
-			requirement = {
-				kind = exactVersion;
-				version = 0.1.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		08A5F85E23AA01EE00981CA5 /* HotKey */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 08A5F85D23AA01EE00981CA5 /* XCRemoteSwiftPackageReference "HotKey" */;
-			productName = HotKey;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 929113E921F9D04100173149 /* Project object */;
 }

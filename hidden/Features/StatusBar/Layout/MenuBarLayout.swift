@@ -7,27 +7,67 @@
 
 import AppKit
 
-// Which of Hidden Bar's sections a menu-bar item belongs to, read from where the
-// user ⌘-dragged it relative to the separators:
+// Which side of Hidden Bar's boundary a menu-bar item is on, read from where the
+// user ⌘-dragged it:
 //
-//     LTR:  [ always hidden ] | [ hidden ] | > [ visible ]
-//                             ^            ^
-//                  always-hidden separator  separator (beside the arrow)
+//     LTR:  [ hidden ] > [ visible ]
+//                      ^
+//                      the boundary (the arrow on macOS 27, the separator before)
 enum MenuBarSection: Int, Comparable {
     case visible
     case hidden
-    case alwaysHidden
 
     static func < (lhs: MenuBarSection, rhs: MenuBarSection) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 }
 
-// One status item another app owns. On macOS 27 Accessibility exposes no title or
-// identifier for these, so the owning bundle and the frame are all there is.
+enum MenuBarVisibilityIdentity: Equatable {
+    case application(bundleIdentifier: String)
+    case system(ownerBundleIdentifier: String?)
+    case unclassifiable(reason: String)
+}
+
+// One status item another process owns. Accessibility exposes its process and
+// frame, but not a per-extra identifier.
 struct MenuBarInventoryItem: Equatable {
-    let bundleIdentifier: String?
+    let identity: MenuBarVisibilityIdentity
     let frame: CGRect
+    let processIdentifier: pid_t
+    let processName: String?
+
+    init(identity: MenuBarVisibilityIdentity,
+         frame: CGRect,
+         processIdentifier: pid_t = 0,
+         processName: String? = nil) {
+        self.identity = identity
+        self.frame = frame
+        self.processIdentifier = processIdentifier
+        self.processName = processName
+    }
+
+    init(bundleIdentifier: String?, frame: CGRect) {
+        if let bundleIdentifier = bundleIdentifier {
+            identity = MenuBarLayoutResolver.systemItemOwners.contains(bundleIdentifier)
+                ? .system(ownerBundleIdentifier: bundleIdentifier)
+                : .application(bundleIdentifier: bundleIdentifier)
+        } else {
+            identity = .unclassifiable(reason: "missing bundle identifier")
+        }
+        self.frame = frame
+        processIdentifier = 0
+        processName = nil
+    }
+
+    var diagnosticDescription: String {
+        let owner: String
+        switch identity {
+        case .application(let bundleIdentifier): owner = bundleIdentifier
+        case .system(let bundleIdentifier): owner = bundleIdentifier ?? "system process"
+        case .unclassifiable(let reason): owner = reason
+        }
+        return "owner=\(owner), pid=\(processIdentifier), frame=\(NSStringFromRect(frame))"
+    }
 }
 
 protocol MenuBarInventoryProviding: AnyObject {
@@ -37,14 +77,84 @@ protocol MenuBarInventoryProviding: AnyObject {
     // while nothing is hidden: once a native visibility assertion is active,
     // hidden items report stale frames.
     func snapshot(completion: @escaping ([MenuBarInventoryItem]) -> Void)
+
+    // Accessibility identifiers of the system controls macOS draws in the menu
+    // bar (Wi-Fi, Focus, clock...), delivered on the main queue. nil when they
+    // cannot be read. Unlike third-party items this tree stays consistent under a
+    // restriction: a control that is hidden drops out of it.
+    func systemControls(completion: @escaping (Set<String>?) -> Void)
 }
 
 struct MenuBarLayout: Equatable {
     // One section per owning bundle, because hiding is per bundle.
     var sections: [String: MenuBarSection]
+    var unclassifiableVisibleItems: [MenuBarInventoryItem] = []
 
     func bundles(in wanted: Set<MenuBarSection>) -> [String] {
         return sections.filter { wanted.contains($0.value) }.map(\.key).sorted()
+    }
+
+    var hasUnclassifiableVisibleItems: Bool {
+        return !unclassifiableVisibleItems.isEmpty
+    }
+}
+
+// The last section each application was observed in. A snapshot only updates the
+// bundles it contains: one missing from it keeps its section, and one never seen
+// is unknown, which the engine treats as visible. Persisted so the first collapse
+// after a launch does not depend on a complete first snapshot.
+final class MenuBarSectionMemory {
+    private struct Entry {
+        var section: MenuBarSection
+        var lastSeen: Date
+    }
+
+    static let defaultsKey = "menuBarSectionMemory"
+
+    private let defaults: UserDefaults
+    private let key: String
+    private var entries: [String: Entry] = [:]
+
+    // Entries not seen for `retention` are dropped at load. A stale entry would
+    // only affect an app that runs again, where the next snapshot corrects it.
+    init(defaults: UserDefaults = .standard,
+         key: String = MenuBarSectionMemory.defaultsKey,
+         retention: TimeInterval = 90 * 24 * 60 * 60,
+         now: Date = Date()) {
+        self.defaults = defaults
+        self.key = key
+        let stored = defaults.dictionary(forKey: key) as? [String: [String: Double]] ?? [:]
+        for (bundle, value) in stored {
+            // 2 was the always-hidden section, which is now part of the hidden one.
+            guard let raw = value["section"], let section = MenuBarSection(rawValue: min(Int(raw), MenuBarSection.hidden.rawValue)),
+                  let seen = value["seen"] else { continue }
+            let lastSeen = Date(timeIntervalSince1970: seen)
+            if now.timeIntervalSince(lastSeen) <= retention {
+                entries[bundle] = Entry(section: section, lastSeen: lastSeen)
+            }
+        }
+    }
+
+    func section(of bundle: String) -> MenuBarSection? {
+        return entries[bundle]?.section
+    }
+
+    func bundles(in wanted: Set<MenuBarSection>) -> [String] {
+        return entries.filter { wanted.contains($0.value.section) }.map(\.key).sorted()
+    }
+
+    func update(with sections: [String: MenuBarSection], at date: Date = Date()) {
+        guard !sections.isEmpty else { return }
+        for (bundle, section) in sections {
+            entries[bundle] = Entry(section: section, lastSeen: date)
+        }
+        save()
+    }
+
+    private func save() {
+        let stored = entries.mapValues { ["section": Double($0.section.rawValue),
+                                          "seen": $0.lastSeen.timeIntervalSince1970] }
+        defaults.set(stored, forKey: key)
     }
 }
 
@@ -56,41 +166,36 @@ enum MenuBarLayoutResolver {
 
     static func resolve(inventory: [MenuBarInventoryItem],
                         separatorFrame: CGRect,
-                        alwaysHiddenSeparatorFrame: CGRect?,
                         isLTR: Bool,
                         excludingBundle ownBundle: String?) -> MenuBarLayout {
         var sections: [String: MenuBarSection] = [:]
+        var unclassifiableVisibleItems: [MenuBarInventoryItem] = []
         for item in inventory {
-            guard let bundle = item.bundleIdentifier,
-                  bundle != ownBundle,
-                  !systemItemOwners.contains(bundle) else { continue }
-            let section = self.section(of: item.frame,
-                                       separatorFrame: separatorFrame,
-                                       alwaysHiddenSeparatorFrame: alwaysHiddenSeparatorFrame,
-                                       isLTR: isLTR)
-            // One app can own several items, but hiding applies to the whole
-            // bundle. The most visible item wins so an icon the user kept visible
-            // is never hidden because a sibling sits in the hidden section.
-            sections[bundle] = min(sections[bundle] ?? section, section)
+            let section = self.section(of: item.frame, separatorFrame: separatorFrame, isLTR: isLTR)
+            switch item.identity {
+            case .system:
+                // System controls are always allowed by the native bridge.
+                continue
+            case .unclassifiable:
+                if section == .visible {
+                    unclassifiableVisibleItems.append(item)
+                }
+            case .application(let bundle):
+                guard bundle != ownBundle else { continue }
+                // One app can own several items, but hiding applies to the whole
+                // bundle. The most visible item wins so an icon the user kept
+                // visible is never hidden because a sibling sits in the hidden
+                // section.
+                sections[bundle] = min(sections[bundle] ?? section, section)
+            }
         }
-        return MenuBarLayout(sections: sections)
+        return MenuBarLayout(sections: sections,
+                             unclassifiableVisibleItems: unclassifiableVisibleItems)
     }
 
-    static func section(of frame: CGRect,
-                        separatorFrame: CGRect,
-                        alwaysHiddenSeparatorFrame: CGRect?,
-                        isLTR: Bool) -> MenuBarSection {
+    static func section(of frame: CGRect, separatorFrame: CGRect, isLTR: Bool) -> MenuBarSection {
         // Distance toward the arrow side: positive means on the visible side.
-        func towardArrow(_ x: CGFloat, from boundary: CGRect) -> CGFloat {
-            return isLTR ? x - boundary.midX : boundary.midX - x
-        }
-        if towardArrow(frame.midX, from: separatorFrame) > 0 {
-            return .visible
-        }
-        if let alwaysHidden = alwaysHiddenSeparatorFrame,
-           towardArrow(frame.midX, from: alwaysHidden) < 0 {
-            return .alwaysHidden
-        }
-        return .hidden
+        let towardArrow = isLTR ? frame.midX - separatorFrame.midX : separatorFrame.midX - frame.midX
+        return towardArrow > 0 ? .visible : .hidden
     }
 }

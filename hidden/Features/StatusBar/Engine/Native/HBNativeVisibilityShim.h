@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 // Whether the framework, both classes and every selector used below resolve.
 BOOL HBNativeVisibilityIsAvailable(void);
 
+// The complete system-item identity set supported by this macOS release, or
+// nil if it cannot be obtained safely.
+NSArray<NSNumber *> * _Nullable HBNativeVisibilitySupportedSystemItems(void);
+
 // Keeps only the given system items and apps visible; macOS hides every other
 // status item and reflows the bar. The completion runs on the main queue with
 // the assertion to hold (hiding lasts until it is invalidated or this process
